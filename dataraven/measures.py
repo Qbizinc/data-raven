@@ -1,5 +1,6 @@
-from sqlalchemy.sql import func, distinct
+import abc
 
+from sqlalchemy.sql import func, distinct
 from .sql.helpers import compile_to_dialect
 from .sql.measure_logic import measure_proportion_each_column, measure_set_duplication
 
@@ -38,11 +39,12 @@ class BaseSQLMeasure(BaseMeasure):
         query_ = compile_to_dialect(query, self.dialect, use_ansi=self.use_ansi)
         return query_
 
+    @abc.abstractmethod
     def build_measure_query(self):
         pass
 
 
-class NullMeasure(BaseSQLMeasure):
+class SQLNullMeasure(BaseSQLMeasure):
     def __init__(
             self,
             dialect,
@@ -63,7 +65,7 @@ class NullMeasure(BaseSQLMeasure):
         return measure_query
 
 
-class DuplicateMeasure(BaseSQLMeasure):
+class SQLDuplicateMeasure(BaseSQLMeasure):
     def __init__(
             self,
             dialect,
@@ -86,7 +88,7 @@ class DuplicateMeasure(BaseSQLMeasure):
         return measure_query
 
 
-class SetDuplicateMeasure(BaseSQLMeasure):
+class SQLSetDuplicateMeasure(BaseSQLMeasure):
     def __init__(
             self,
             dialect,
