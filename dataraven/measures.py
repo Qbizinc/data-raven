@@ -5,7 +5,15 @@ from .sql.helpers import compile_to_dialect
 from .sql.measure_logic import measure_proportion_each_column, measure_set_duplication
 
 
-class BaseSQLMeasure(object):
+class SQLMeasure(object):
+    def __init__(self, query, from_, *columns, dialect):
+        self.query = query
+        self.from_ = from_
+        self.columns = columns
+        self.dialect = dialect
+
+
+class SQLMeasureFactory(object):
     def __init__(
             self,
             dialect,
@@ -14,19 +22,11 @@ class BaseSQLMeasure(object):
             where=None,
             use_ansi=True
     ):
+        self.dialect = dialect
         self.from_ = from_
         self.columns = columns
         self.where = where
-        self.dialect = dialect
         self.use_ansi = use_ansi
-        self.query = None
-
-        measure_query = self.build_measure_query()
-        dialect_query = self.compile_dialect(measure_query)
-        self.set_query(dialect_query)
-
-    def set_query(self, query):
-        self.query = query
 
     def compile_dialect(self, query):
         query_ = compile_to_dialect(query, self.dialect, use_ansi=self.use_ansi)
@@ -36,16 +36,15 @@ class BaseSQLMeasure(object):
     def build_measure_query(self):
         pass
 
+    def factory(self):
+        query = self.build_measure_query()
+        dialect_query = self.compile_dialect(query)
+        return SQLMeasure(dialect_query, self.from_, *self.columns, self.dialect)
 
-class SQLNullMeasure(BaseSQLMeasure):
-    def __init__(
-            self,
-            dialect,
-            from_,
-            *columns,
-            where=None
-    ):
-        super().__init__(dialect, from_, *columns, where=where)
+
+class SQLNullMeasureFactory(SQLMeasureFactory):
+    def __init__(self, dialect, from_, *columns, where=None, use_ansi=True):
+        super().__init__(dialect, from_, *columns, where=where, use_ansi=use_ansi)
 
     def build_measure_query(self):
         aggregate_func = func.count
@@ -58,15 +57,9 @@ class SQLNullMeasure(BaseSQLMeasure):
         return measure_query
 
 
-class SQLDuplicateMeasure(BaseSQLMeasure):
-    def __init__(
-            self,
-            dialect,
-            from_,
-            *columns,
-            where=None
-    ):
-        super().__init__(dialect, from_, *columns, where=where)
+class SQLDuplicateMeasureFactory(SQLMeasureFactory):
+    def __init__(self, dialect, from_, *columns, where=None, use_ansi=True):
+        super().__init__(dialect, from_, *columns, where=where, use_ansi=use_ansi)
 
     def build_measure_query(self):
         def aggregate_func(column):
@@ -81,15 +74,9 @@ class SQLDuplicateMeasure(BaseSQLMeasure):
         return measure_query
 
 
-class SQLSetDuplicateMeasure(BaseSQLMeasure):
-    def __init__(
-            self,
-            dialect,
-            from_,
-            *columns,
-            where=None
-    ):
-        super().__init__(dialect, from_, *columns, where=where)
+class SQLSetDuplicateMeasureFactory(SQLMeasureFactory):
+    def __init__(self, dialect, from_, *columns, where=None, use_ansi=True):
+        super().__init__(dialect, from_, *columns, where=where, use_ansi=use_ansi)
 
     def build_measure_query(self):
         measure_query = measure_set_duplication(self.from_, *self.columns, where_clause=self.where)
