@@ -132,4 +132,4 @@ dmypy.json
 .idea
 
 # ignore test files
-test_*.py
+test_.py
