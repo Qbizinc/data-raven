@@ -6,7 +6,7 @@ from .sql.measure_logic import measure_proportion_each_column, measure_set_dupli
 
 
 class SQLMeasure(object):
-    def __init__(self, query, from_, *columns, dialect):
+    def __init__(self, query, from_, dialect, *columns):
         self.query = query
         self.from_ = from_
         self.columns = columns
@@ -39,7 +39,7 @@ class SQLMeasureFactory(object):
     def factory(self):
         query = self.build_measure_query()
         dialect_query = self.compile_dialect(query)
-        return SQLMeasure(dialect_query, self.from_, *self.columns, self.dialect)
+        return SQLMeasure(dialect_query, self.from_, self.dialect, *self.columns)
 
 
 class SQLNullMeasureFactory(SQLMeasureFactory):
