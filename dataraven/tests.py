@@ -53,9 +53,11 @@ class TestFactory(object):
     def build_test_descriptions(self):
         pass
 
-    @abc.abstractmethod
     def factory(self):
-        pass
+        descriptions = self.build_test_descriptions()
+        measure = self.build_measure()
+        predicate = test_predicate_gt
+        return Test(descriptions, measure, self.threshold, predicate, hard_fail=self.hard_fail)
 
 
 class SQLNullTestFactory(TestFactory):
@@ -86,6 +88,3 @@ class SQLNullTestFactory(TestFactory):
         measure = self.build_measure()
         predicate = test_predicate_gt
         return Test(descriptions, measure, self.threshold, predicate, hard_fail=self.hard_fail)
-
-
-
