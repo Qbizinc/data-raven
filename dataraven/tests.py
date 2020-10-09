@@ -41,7 +41,6 @@ class TestFactory(object):
     def build_measure(self):
         pass
 
-    @staticmethod
     def format_description(self, description_template, column):
         if isinstance(self.threshold, dict):
             threshold_ = self.threshold[column]
