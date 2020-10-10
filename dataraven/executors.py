@@ -85,8 +85,3 @@ class SQLExecutor(object):
         handler = QueryHandler(self.conn, measure_query)
         measure_results = handler.get_results()
         return measure_results
-
-
-
-
-
