@@ -24,93 +24,71 @@ class FetchQueryResults(object):
         return self.results
 
 
-class FormatTestDescription(object):
-    def __init__(self, test, **kwargs):
-        self.test = test
-        self.kwargs = kwargs
+def format_test_description(test, **kwargs):
+    test_descriptions = {}
+    description_template = test.description
+    if isinstance(test, CustomTest):
+        columns = test.custom_test_columns
+    else:
+        measure = test.measure
+        columns = measure.columns
+        from_ = measure.from_
+        kwargs["from_"] = from_
 
-    def format_descriptions(self):
-        test_descriptions = {}
-        description_kwargs = self.kwargs
-        description_template = self.test.description
-        if isinstance(self.test, CustomTest):
-            columns = self.test.custom_test_columns
-        else:
-            measure = self.test.measure
-            columns = measure.columns
-            from_ = measure.from_
-            description_kwargs["from_"] = from_
-
-        threshold = self.test.threshold
-        if columns:
-            for column in columns:
-                if isinstance(threshold, dict):
-                    threshold_ = threshold[column]
-                else:
-                    threshold_ = threshold
-                description_kwargs["threshold"] = threshold_
-                description_kwargs["column"] = column
-                description = description_template.format(**description_kwargs)
-                test_descriptions[column] = description
-        else:
-            description = description_template.format(**description_kwargs)
-            test_descriptions["no_columns"] = description
-        return test_descriptions
-
-
-class BuildTestOutcomes(object):
-    def __init__(self, measure_results, test):
-        self.outcomes = self.build_test_outcomes(measure_results, test)
-
-    @staticmethod
-    def build_test_outcomes(measure_results, test):
-        test_outcomes = []
-        threshold = test.threshold
-        predicate = test.predicate
-
-        for column_name in measure_results:
+    threshold = test.threshold
+    if columns:
+        for column in columns:
             if isinstance(threshold, dict):
-                threshold_ = threshold[column_name]
+                threshold_ = threshold[column]
             else:
                 threshold_ = threshold
-            measure_value = measure_results[column_name]
-            test_result = predicate(measure_value, threshold_)
-            test_outcome = {"column": column_name, "result": test_result, "measure": measure_value,
-                            "threshold": threshold_}
-            test_outcomes.append(test_outcome)
-        return test_outcomes
+            kwargs["threshold"] = threshold_
+            kwargs["column"] = column
+            description = description_template.format(**kwargs)
+            test_descriptions[column] = description
+    else:
+        description = description_template.format(**kwargs)
+        test_descriptions["no_columns"] = description
+    return test_descriptions
 
-    def get_outcomes(self):
-        return self.outcomes
+
+def build_test_outcomes(measure_values, test):
+    test_outcomes = []
+    threshold = test.threshold
+    predicate = test.predicate
+
+    for column_name in measure_values:
+        if isinstance(threshold, dict):
+            threshold_ = threshold[column_name]
+        else:
+            threshold_ = threshold
+        measure_value = measure_values[column_name]
+        test_result = predicate(measure_value, threshold_)
+        test_outcome = {"column": column_name, "result": test_result, "measure": measure_value,
+                        "threshold": threshold_}
+        test_outcomes.append(test_outcome)
+    return test_outcomes
 
 
-class FormatTestResultMsg(object):
-    def __init__(self, test_outcomes, test_descriptions):
-        self.result_msgs = self.format_test_result_msg(test_outcomes, test_descriptions)
+def format_test_result_msgs(test_outcomes, test_descriptions):
+    test_result_msgs = []
 
-    @staticmethod
-    def format_test_result_msg(test_outcomes, descriptions):
-        test_result_msgs = []
+    for test_outcome in test_outcomes:
+        column = test_outcome["column"]
+        description = test_descriptions[column]
+        result = test_outcome["result"]
+        measure = test_outcome["measure"]
+        threshold = test_outcome["threshold"]
 
-        for test_outcome in test_outcomes:
-            column = test_outcome["column"]
-            description = descriptions[column]
-            result = test_outcome["result"]
-            measure = test_outcome["measure"]
-            threshold = test_outcome["threshold"]
-
-            test_result_msg = f"""
-                           Test description: {description}
-                           Test outcome: {result}
-                           Test measure: {measure}
-                           Test threshold: {threshold}
-                           """
-            test_result_msg = {"result_msg": test_result_msg, "outcome": result, "column": column}
-            test_result_msgs.append(test_result_msg)
-        return test_result_msgs
-
-    def get_result_msgs(self):
-        return self.result_msgs
+        test_result_msg = f"""
+                              Test description: {description}
+                              Test outcome: {result}
+                              Test measure: {measure}
+                              Test threshold: {threshold}
+                              """
+        test_result_msg = {"result_msg": test_result_msg, "outcome": result, "column": column}
+        test_result_msgs.append(test_result_msg)
+    return test_result_msgs
 
 
 def log_test_results(test_results, logger):
@@ -158,11 +136,12 @@ def execute_sql_test(test, conn, logger):
     else:
         measure = test.measure
         query = measure.query
-        measure_results = FetchQueryResults(conn, query).get_results()
-        test_outcomes = BuildTestOutcomes(measure_results, test).get_outcomes()
+        measure_values = FetchQueryResults(conn, query).get_results()
+        test_outcomes = build_test_outcomes(measure_values, test)
 
-    descriptions = FormatTestDescription(test).format_descriptions()
-    result_msgs = FormatTestResultMsg(test_outcomes, descriptions).get_result_msgs()
+    descriptions = format_test_description(test)
+
+    result_msgs = format_test_result_msgs(test_outcomes, descriptions)
     log_test_results(result_msgs, logger)
     raise_execpetion_if_fail(result_msgs, test)
     return True
