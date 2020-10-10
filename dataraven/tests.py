@@ -5,60 +5,55 @@ from .test_logic import test_predicate_gt
 
 
 class Test(object):
-    def __init__(self, descriptions, measure, threshold, predicate, hard_fail=False):
-        self.descriptions = descriptions
+    def __init__(self, description=None, measure=None, threshold=None, predicate=None, hard_fail=False,
+                 custom_test=None, custom_test_columns=None):
+        self.description = description
         self.measure = measure
         self.threshold = threshold
         self.predicate = predicate
         self.hard_fail = hard_fail
+        self.custom_test = custom_test
+        self.custom_test_columns = custom_test_columns
+
+
+class CustomTest(Test):
+    def __init__(self, description, custom_test, *columns, threshold=None, hard_fail=False):
+        super().__init__(
+            description=description,
+            custom_test=custom_test,
+            custom_test_columns=columns,
+            threshold=threshold,
+            hard_fail=hard_fail
+        )
 
 
 class TestFactory(object):
     def __init__(
             self,
-            dialect,
-            from_,
-            threshold,
             *columns,
-            where=None,
+            description=None,
+            measure=None,
+            threshold=None,
             predicate=None,
             hard_fail=False,
-            use_ansi=None
+            custom_test=None
     ):
-        self.dialect = dialect
-        self.from_ = from_
+        self.description = description
+        self.measure = measure
         self.threshold = threshold
-        self.columns = columns
-        self.where = where
         self.predicate = predicate
         self.hard_fail = hard_fail
-        self.use_ansi = use_ansi
-
-    def set_test_predicate(self, predicate):
-        self.predicate = predicate
-
-    @abc.abstractmethod
-    def build_measure(self):
-        pass
-
-    def format_description(self, description_template, column):
-        if isinstance(self.threshold, dict):
-            threshold_ = self.threshold[column]
-        else:
-            threshold_ = self.threshold
-
-        description = description_template.format(column=column, from_clause=self.from_, threshold=threshold_)
-        return description
-
-    @abc.abstractmethod
-    def build_test_descriptions(self):
-        pass
+        self.custom_test = custom_test
+        self.columns = columns
 
     def factory(self):
-        descriptions = self.build_test_descriptions()
-        measure = self.build_measure()
-        predicate = test_predicate_gt
-        return Test(descriptions, measure, self.threshold, predicate, hard_fail=self.hard_fail)
+        if self.custom_test is not None:
+            test = CustomTest(self.description, self.custom_test, *self.columns, threshold=self.threshold,
+                              hard_fail=self.hard_fail)
+        else:
+            test = Test(description=self.description, measure=self.measure, threshold=self.threshold,
+                        predicate=self.predicate, hard_fail=self.hard_fail)
+        return test
 
 
 class SQLNullTestFactory(TestFactory):
@@ -72,17 +67,19 @@ class SQLNullTestFactory(TestFactory):
             hard_fail=False,
             use_ansi=True
     ):
-        super().__init__(dialect, from_, threshold, *columns, where=where, hard_fail=hard_fail, use_ansi=use_ansi)
+        description = "{column} in table {from_} should have fewer than {threshold} null values."
+        measure = SQLNullMeasureFactory(dialect, from_, *columns, where=where, use_ansi=use_ansi).factory()
+        predicate = test_predicate_gt
+        super().__init__(
+            description=description,
+            measure=measure,
+            threshold=threshold,
+            predicate=predicate,
+            hard_fail=hard_fail
+        )
 
-    def build_measure(self):
-        measure = SQLNullMeasureFactory(self.dialect, self.from_, *self.columns, where=self.where,
-                                        use_ansi=self.use_ansi).factory()
-        return measure
 
-    def build_test_descriptions(self):
-        test_descriptions = {}
-        description_template = "{column} in table {from_clause} should have fewer than {threshold} null values."
-        for column in self.columns:
-            description = self.format_description(description_template, column)
-            test_descriptions[column] = description
-        return test_descriptions
+class CustomTestFactory(TestFactory):
+    def __init__( self, description, custom_test, *columns, threshold=None, hard_fail=False):
+        super().__init__(*columns, description=description, custom_test=custom_test, threshold=threshold,
+                         hard_fail=hard_fail)
