@@ -1,6 +1,6 @@
 
 
-def measure_null(row, *column_indicies, null_values=None):
+def measure_null(row, *columns, null_values=None):
     """
     :param row:
     :param column_indicies:
@@ -13,16 +13,16 @@ def measure_null(row, *column_indicies, null_values=None):
     else:
         null_values_ = null_values_.union(null_values)
 
-    result = dict(zip(column_indicies, [0] * len(column_indicies)))
-    for column_index in column_indicies:
-        value = row[column_index]
+    result = dict(zip(columns, [0] * len(columns)))
+    for column in columns:
+        value = row[column]
         if value in null_values_:
-            result[column_index] += 1
+            result[column] += 1
     output = {"result": result}
     return output
 
 
-def measure_duplicates(row, *column_indicies, collection=None):
+def measure_duplicates(row, *columns, collection=None):
     """
     :param row:
     :param column_indicies:
@@ -33,9 +33,9 @@ def measure_duplicates(row, *column_indicies, collection=None):
         collection = {}
 
     indexed_values = []
-    for column_index in column_indicies:
-        value = row[column_index]
-        indexed_values.append((column_index, value))
+    for column in columns:
+        value = row[column]
+        indexed_values.append((column, value))
 
     key = tuple(indexed_values)
     if key not in collection:
