@@ -13,7 +13,7 @@ class Measure(object):
 
 
 class SQLMeasure(Measure):
-    def __init__(self, *columns, query, from_, dialect):
+    def __init__(self, from_, query, dialect, *columns):
         self.columns = columns
         self.query = query
         self.from_ = from_
@@ -21,11 +21,10 @@ class SQLMeasure(Measure):
 
 
 class CSVMeasure(Measure):
-    def __init__(self, *columns, path, reducer, filter, delimiter):
+    def __init__(self, from_, reducer, delimiter, *columns):
         self.columns = columns
-        self.path = path
+        self.from_ = from_
         self.reducer = reducer
-        self.filter = filter
         self.delimiter = delimiter
 
 
@@ -61,10 +60,10 @@ class SQLMeasureFactory(MeasureFactory):
     def factory(self):
         query = self.build_measure_query()
         query_ = self.compile_dialect(query, self.dialect, self.use_ansi)
-        return SQLMeasure(*self.columns, query=query_, from_=self.from_, dialect=self.dialect)
+        return SQLMeasure(self.from_, query_, self.dialect, *self.columns)
 
 
-class SQLNullMeasureFactory(SQLMeasureFactory):
+class SQLNullMeasure(SQLMeasureFactory):
     def __init__(self, dialect, from_, *columns, where=None, use_ansi=True):
         super().__init__(dialect, from_, *columns, where=where, use_ansi=use_ansi)
 
@@ -79,7 +78,7 @@ class SQLNullMeasureFactory(SQLMeasureFactory):
         return measure_query
 
 
-class SQLDuplicateMeasureFactory(SQLMeasureFactory):
+class SQLDuplicateMeasure(SQLMeasureFactory):
     def __init__(self, dialect, from_, *columns, where=None, use_ansi=True):
         super().__init__(dialect, from_, *columns, where=where, use_ansi=use_ansi)
 
@@ -96,7 +95,7 @@ class SQLDuplicateMeasureFactory(SQLMeasureFactory):
         return measure_query
 
 
-class SQLSetDuplicateMeasureFactory(SQLMeasureFactory):
+class SQLSetDuplicateMeasure(SQLMeasureFactory):
     def __init__(self, dialect, from_, *columns, where=None, use_ansi=True):
         super().__init__(dialect, from_, *columns, where=where, use_ansi=use_ansi)
 
@@ -106,10 +105,9 @@ class SQLSetDuplicateMeasureFactory(SQLMeasureFactory):
 
 
 class CSVMeasureFactory(MeasureFactory):
-    def __init__(self, path, *columns, filter=None, delimiter=','):
-        self.path = path
+    def __init__(self, from_, *columns, delimiter=','):
+        self.from_ = from_
         self.columns = columns
-        self.filter = filter
         self.delimiter = delimiter
 
     @abc.abstractmethod
@@ -118,12 +116,12 @@ class CSVMeasureFactory(MeasureFactory):
 
     def factory(self):
         reducer = self.build_reducer()
-        return CSVMeasure(*self.columns, self.path, reducer, self.filter, self.delimiter)
+        return CSVMeasure(self.from_, reducer, self.delimiter, *self.columns)
 
 
 class CSVNullMeasure(CSVMeasureFactory):
-    def __init__(self, path, *columns, filter=None, delimiter=','):
-        super().__init__(path, *columns, filter=filter, delimiter=delimiter)
+    def __init__(self, from_, *columns, delimiter=','):
+        super().__init__(from_, *columns, delimiter=delimiter)
 
     def build_reducer(self):
         return measure_null
