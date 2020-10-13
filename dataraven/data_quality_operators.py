@@ -1,6 +1,6 @@
 import abc
 
-from .tests import CustomTestFactory, SQLNullTest, CSVNullTest
+from .tests import CustomTestFactory, SQLNullTest, SQLDuplicateTest, SQLSetDuplicateTest, CSVNullTest
 from .operations import SQLOperator, CSVOperator, CustomOperator
 
 
@@ -63,6 +63,50 @@ class SQLNullCheckOperator(SQLDQOperator):
     def build_test(self):
         test = SQLNullTest(self.dialect, self.from_, self.threshold, *self.columns, where=self.where,
                            hard_fail=self.hard_fail, use_ansi=self.use_ansi).factory()
+        return test
+
+
+class SQLDuplicateCheckOperator(SQLDQOperator):
+    def __init__(
+            self,
+            conn,
+            dialect,
+            from_,
+            logger,
+            threshold,
+            *columns,
+            where=None,
+            hard_fail=None,
+            use_ansi=True
+    ):
+        super().__init__(conn, dialect, from_, logger, threshold, *columns, where=where, hard_fail=hard_fail,
+                         use_ansi=use_ansi)
+
+    def build_test(self):
+        test = SQLDuplicateTest(self.dialect, self.from_, self.threshold, *self.columns, where=self.where,
+                                hard_fail=self.hard_fail, use_ansi=self.use_ansi).factory()
+        return test
+
+
+class SQLSetDuplicateCheckOperator(SQLDQOperator):
+    def __init__(
+            self,
+            conn,
+            dialect,
+            from_,
+            logger,
+            threshold,
+            *columns,
+            where=None,
+            hard_fail=None,
+            use_ansi=True
+    ):
+        super().__init__(conn, dialect, from_, logger, threshold, *columns, where=where, hard_fail=hard_fail,
+                         use_ansi=use_ansi)
+
+    def build_test(self):
+        test = SQLSetDuplicateTest(self.dialect, self.from_, self.threshold, *self.columns, where=self.where,
+                                   hard_fail=self.hard_fail, use_ansi=self.use_ansi).factory()
         return test
 
 
