@@ -33,15 +33,14 @@ class Operator(object):
         test_outcomes = []
         threshold = test.threshold
         predicate = test.predicate
-
-        for column_name in measure_values:
+        for column in measure_values:
             if isinstance(threshold, dict):
-                threshold_ = threshold[column_name]
+                threshold_ = threshold[column]
             else:
                 threshold_ = threshold
-            measure_value = measure_values[column_name]
+            measure_value = measure_values[column]
             test_result = predicate(measure_value, threshold_)
-            test_outcome = {"column": column_name, "result": test_result, "measure": measure_value,
+            test_outcome = {"column": column, "result": test_result, "measure": measure_value,
                             "threshold": threshold_}
             test_outcomes.append(test_outcome)
         return test_outcomes
