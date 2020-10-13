@@ -25,23 +25,19 @@ def apply_reducer(dataset, reducer, *columns, **kwargs):
     :return:
     """
     rowcnt = 0
-    headers = None
     accum = dict(zip(columns, [0] * len(columns)))
     for row in dataset:
         rowcnt += 1
-        if rowcnt == 1:
-            headers = row
-        else:
-            output = reducer(row, *columns, **kwargs)
+        output = reducer(row, *columns, **kwargs)
 
-            result = output["result"]
-            collection = output.get("collection")
-            if collection is not None:
-                kwargs["collection"] = collection
+        result = output["result"]
+        collection = output.get("collection")
+        if collection is not None:
+            kwargs["collection"] = collection
 
-            for column in result:
-                accum[column] = accum.get(column, 0) + result[column]
+        for column in result:
+            accum[column] = accum.get(column, 0) + result[column]
 
     rowcnt -= 1  # offset for headers row
-    results = {"rowcnt": rowcnt, "accum": accum, "headers": headers}
+    results = {"rowcnt": rowcnt, "accum": accum}
     return results
