@@ -29,20 +29,18 @@ def measure_duplicates(row, *columns, collection=None):
     :param collection:
     :return:
     """
+    result = None
     if collection is None:
         collection = {}
 
-    indexed_values = []
     for column in columns:
         value = row[column]
-        indexed_values.append((column, value))
-
-    key = tuple(indexed_values)
-    if key not in collection:
-        collection[key] = None
-        result = {key: 0}
-    else:
-        result = {key: 1}
+        key = (column, value)
+        if key not in collection:
+            collection[key] = None
+            result = {column: 0}
+        else:
+            result = {column: 1}
 
     output = {"result": result, "collection": collection}
     return output
