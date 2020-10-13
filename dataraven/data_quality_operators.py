@@ -15,8 +15,8 @@ class SQLDQOperator(DQOperator):
             conn,
             dialect,
             from_,
-            threshold,
             logger,
+            threshold,
             *columns,
             where=None,
             hard_fail=None,
@@ -39,7 +39,7 @@ class SQLDQOperator(DQOperator):
 
     def execute(self):
         test = self.build_test()
-        operator = SQLOperator(test, self.logger, self.conn)
+        operator = SQLOperator(self.conn, self.logger, test)
         test_results = operator.execute()
         return test_results
 
@@ -50,18 +50,18 @@ class SQLNullCheckOperator(SQLDQOperator):
             conn,
             dialect,
             from_,
-            threshold,
             logger,
+            threshold,
             *columns,
             where=None,
             hard_fail=None,
             use_ansi=True
     ):
-        super().__init__(conn, dialect, from_, threshold, logger, *columns, where=where, hard_fail=hard_fail,
+        super().__init__(conn, dialect, from_, logger, threshold, *columns, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
     def build_test(self):
-        test = SQLNullTest(self.threshold, self.dialect, self.from_, *self.columns, where=self.where,
+        test = SQLNullTest(self.dialect, self.from_, self.threshold, *self.columns, where=self.where,
                            hard_fail=self.hard_fail, use_ansi=self.use_ansi).factory()
         return test
 
@@ -70,8 +70,8 @@ class CSVDQOperator(DQOperator):
     def __init__(
             self,
             from_,
-            threshold,
             logger,
+            threshold,
             *columns,
             delimiter=',',
             hard_fail=None,
@@ -94,7 +94,7 @@ class CSVDQOperator(DQOperator):
 
     def execute(self):
         test = self.build_test()
-        operator = CSVOperator(test, self.logger, self.fieldnames, **self.reducer_kwargs)
+        operator = CSVOperator(self.logger, test , fieldnames=self.fieldnames, **self.reducer_kwargs)
         test_results = operator.execute()
         return test_results
 
@@ -103,18 +103,18 @@ class CSVNullCheckOperator(CSVDQOperator):
     def __init__(
             self,
             from_,
-            threshold,
             logger,
+            threshold,
             *columns,
             delimiter=',',
             hard_fail=None,
             fieldnames=None
     ):
-        super().__init__(from_, threshold, logger, *columns, delimiter=delimiter, hard_fail=hard_fail,
+        super().__init__(from_, logger, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail,
                          fieldnames=fieldnames)
 
     def build_test(self):
-        test = CSVNullTest(self.threshold, self.from_, *self.columns, delimiter=self.delimiter,
+        test = CSVNullTest(self.from_, self.threshold, *self.columns, delimiter=self.delimiter,
                            hard_fail=self.hard_fail).factory()
         return test
 
@@ -123,8 +123,8 @@ class CustomDQOperator(DQOperator):
     def __init__(
             self,
             conn,
-            description,
             custom_test,
+            description,
             logger,
             *columns,
             threshold=None,
@@ -149,6 +149,6 @@ class CustomDQOperator(DQOperator):
 
     def execute(self):
         test = self.build_test()
-        operator = CustomOperator(test, self.logger, self.conn, **self.test_desc_kwargs)
+        operator = CustomOperator(self.conn, self.logger, test, **self.test_desc_kwargs)
         test_results = operator.execute()
         return test_results

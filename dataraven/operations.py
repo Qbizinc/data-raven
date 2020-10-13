@@ -103,7 +103,7 @@ class Operator(object):
 
 
 class SQLOperator(Operator):
-    def __init__(self, test, logger, conn):
+    def __init__(self, conn, logger, test):
         self.test = test
         self.logger = logger
         self.conn = conn
@@ -134,7 +134,7 @@ class SQLOperator(Operator):
 
 
 class CSVOperator(Operator):
-    def __init__(self, test, logger, fieldnames=None, **reducer_kwargs):
+    def __init__(self, logger, test, fieldnames=None, **reducer_kwargs):
         self.test = test
         self.logger = logger
         self.fieldnames = fieldnames
@@ -173,7 +173,7 @@ class CSVOperator(Operator):
 
 
 class CustomOperator(Operator):
-    def __init__(self, test, logger, conn, **test_desc_kwargs):
+    def __init__(self, conn, logger, test, **test_desc_kwargs):
         self.test = test
         self.logger = logger
         self.conn = conn

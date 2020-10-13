@@ -13,7 +13,7 @@ class Measure(object):
 
 
 class SQLMeasure(Measure):
-    def __init__(self, from_, query, dialect, *columns):
+    def __init__(self, dialect, from_, query, *columns):
         self.columns = columns
         self.query = query
         self.from_ = from_
@@ -21,7 +21,7 @@ class SQLMeasure(Measure):
 
 
 class CSVMeasure(Measure):
-    def __init__(self, from_, reducer, delimiter, *columns):
+    def __init__(self, delimiter, from_, reducer, *columns):
         self.columns = columns
         self.from_ = from_
         self.reducer = reducer
@@ -60,7 +60,7 @@ class SQLMeasureFactory(MeasureFactory):
     def factory(self):
         query = self.build_measure_query()
         query_ = self.compile_dialect(query, self.dialect, self.use_ansi)
-        return SQLMeasure(self.from_, query_, self.dialect, *self.columns)
+        return SQLMeasure(self.dialect, self.from_, query_, *self.columns)
 
 
 class SQLNullMeasure(SQLMeasureFactory):
@@ -116,7 +116,7 @@ class CSVMeasureFactory(MeasureFactory):
 
     def factory(self):
         reducer = self.build_reducer()
-        return CSVMeasure(self.from_, reducer, self.delimiter, *self.columns)
+        return CSVMeasure(self.delimiter, self.from_, reducer, *self.columns)
 
 
 class CSVNullMeasure(CSVMeasureFactory):
