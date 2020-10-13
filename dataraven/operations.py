@@ -103,11 +103,10 @@ class Operator(object):
 
 
 class SQLOperator(Operator):
-    def __init__(self, test, logger, conn, **test_desc_kwargs):
+    def __init__(self, test, logger, conn):
         self.test = test
         self.logger = logger
         self.conn = conn
-        self.test_desc_kwargs = test_desc_kwargs
 
     def calculate_measure_values(self):
         measure = self.test.measure
@@ -116,7 +115,7 @@ class SQLOperator(Operator):
         return measure_values
 
     def execute(self):
-        descriptions = self.format_test_description(self.test, **self.test_desc_kwargs)
+        descriptions = self.format_test_description(self.test)
 
         measure_values = self.calculate_measure_values()
         test_outcomes = self.build_test_outcomes(measure_values, self.test)
@@ -135,11 +134,11 @@ class SQLOperator(Operator):
 
 
 class CSVOperator(Operator):
-    def __init__(self, test, logger, fieldnames=None, **test_desc_kwargs):
+    def __init__(self, test, logger, fieldnames=None, **reducer_kwargs):
         self.test = test
         self.logger = logger
         self.fieldnames = fieldnames
-        self.test_desc_kwargs = test_desc_kwargs
+        self.reducer_kwargs = reducer_kwargs
 
     def calculate_measure_values(self):
         measure = self.test.measure
@@ -150,7 +149,7 @@ class CSVOperator(Operator):
 
         document = get_csv_document(path, delimiter=delimiter, fieldnames=self.fieldnames)
 
-        reducer_results = apply_reducer(document, reducer, *columns, **self.test_desc_kwargs)
+        reducer_results = apply_reducer(document, reducer, *columns, **self.reducer_kwargs)
         measure_values = build_measure_proportion_values(reducer_results)
         return measure_values
 
