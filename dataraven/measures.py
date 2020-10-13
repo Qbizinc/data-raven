@@ -5,7 +5,7 @@ from sqlalchemy.sql import func, distinct
 from .sql.helpers import compile_to_dialect
 from .sql.measure_logic import measure_proportion_each_column, measure_set_duplication
 
-from .csv.reducers import measure_null
+from .csv.reducers import measure_null, measure_duplicates
 
 
 class Measure(object):
@@ -127,3 +127,11 @@ class CSVNullMeasure(CSVMeasureFactory):
 
     def build_reducer(self):
         return measure_null
+
+
+class CSVDuplicateMeasure(CSVMeasureFactory):
+    def __init__(self, from_, *columns, delimiter=','):
+        super().__init__(from_, *columns, delimiter=delimiter)
+
+    def build_reducer(self):
+        return measure_duplicates
