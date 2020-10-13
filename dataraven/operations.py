@@ -205,7 +205,7 @@ class CustomOperator(Operator):
 
     def calcualte_test_results(self):
         test_outcomes = []
-        query = self.test.custom_test
+        query = self.test.test
         columns = self.test.columns
         threshold = self.test.threshold
 
@@ -236,4 +236,4 @@ class CustomOperator(Operator):
             "result_messages": result_msgs
         }
 
-        return result_msgs
+        return test_results
