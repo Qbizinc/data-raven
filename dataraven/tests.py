@@ -6,15 +6,6 @@ from .test_logic import test_predicate_gt
 
 class Test(object):
     pass
-    '''def __init__(self, description=None, measure=None, threshold=None, predicate=None, hard_fail=False,
-                 custom_test=None, custom_test_columns=None):
-        self.description = description
-        self.measure = measure
-        self.threshold = threshold
-        self.predicate = predicate
-        self.hard_fail = hard_fail
-        self.custom_test = custom_test
-        self.custom_test_columns = custom_test_columns'''
 
 
 class SQLTest(Test):
@@ -25,25 +16,14 @@ class SQLTest(Test):
         self.predicate = predicate
         self.hard_fail = hard_fail
 
-        #super().__init__(description=description, measure=measure, threshold=threshold, predicate=predicate,
-        #                 hard_fail=hard_fail)
-
 
 class CustomSQLTest(Test):
-    def __init__(self, description, custom_test, *columns, threshold=None, hard_fail=False):
+    def __init__(self, description, test, *columns, threshold=None, hard_fail=False):
         self.description = description
-        self.custom_test = custom_test
+        self.test = test
         self.columns = columns
         self.threshold = threshold
         self.hard_fail = hard_fail
-
-        '''super().__init__(
-            description=description,
-            custom_test=custom_test,
-            custom_test_columns=columns,
-            threshold=threshold,
-            hard_fail=hard_fail
-        )'''
 
 
 class CSVTest(Test):
@@ -53,37 +33,9 @@ class CSVTest(Test):
         self.threshold = threshold
         self.predicate = predicate
         self.hard_fail = hard_fail
-        #super().__init__(description=description, measure=measure, threshold=threshold, predicate=predicate,
-        #                 hard_fail=hard_fail)
 
 
 class TestFactory(object):
-    def __init__(
-            self,
-            *columns,
-            dialect=None,
-            from_=None,
-            where=None,
-            description=None,
-            threshold=None,
-            predicate=None,
-            hard_fail=False,
-            use_ansi=True,
-            custom_test=None,
-            delimiter=','
-    ):
-        self.dialect = dialect
-        self.from_ = from_
-        self.where = where
-        self.description = description
-        self.threshold = threshold
-        self.predicate = predicate
-        self.hard_fail = hard_fail
-        self.use_ansi = use_ansi
-        self.custom_test = custom_test
-        self.columns = columns
-        self.delimiter = delimiter
-
     @abc.abstractmethod
     def build_measure(self): pass
 
@@ -92,22 +44,32 @@ class TestFactory(object):
 
 
 class CustomTestFactory(TestFactory):
-    def __init__( self, description, custom_test, *columns, threshold=None, hard_fail=None):
-        super().__init__(*columns, description=description, custom_test=custom_test, threshold=threshold,
-                         hard_fail=hard_fail)
+    def __init__( self, description, test, *columns, threshold=None, hard_fail=None):
+        self.description = description
+        self.test = test
+        self.columns = columns
+        self.threshold = threshold
+        self.hard_fail = hard_fail
 
     def build_measure(self): pass
 
     def factory(self):
-        return CustomSQLTest(self.description, self.custom_test, *self.columns, threshold=self.threshold,
+        return CustomSQLTest(self.description, self.test, *self.columns, threshold=self.threshold,
                              hard_fail=self.hard_fail)
 
 
 class SQLTestFactory(TestFactory):
     def __init__(self, description, threshold, predicate, dialect, from_, *columns, where=None, hard_fail=False,
                  use_ansi=True):
-        super().__init__(*columns, description=description, threshold=threshold, predicate=predicate, dialect=dialect,
-                         from_=from_, where=where, hard_fail=hard_fail, use_ansi=use_ansi)
+        self.description = description
+        self.threshold = threshold
+        self.predicate = predicate
+        self.dialect = dialect
+        self.from_ = from_
+        self.columns = columns
+        self.where = where
+        self.hard_fail = hard_fail
+        self.use_ansi = use_ansi
 
     @abc.abstractmethod
     def build_measure(self): pass
@@ -132,8 +94,13 @@ class SQLNullTest(SQLTestFactory):
 
 class CSVTestFactory(TestFactory):
     def __init__(self, description, threshold, predicate, from_, *columns, delimiter=',', hard_fail=False):
-        super().__init__(*columns, description=description, threshold=threshold, predicate=predicate, from_=from_,
-                         delimiter=delimiter, hard_fail=hard_fail)
+        self.description = description
+        self.threshold = threshold
+        self.predicate = predicate
+        self.from_ = from_
+        self.columns = columns
+        self.delimiter = delimiter
+        self.hard_fail = hard_fail
 
     @abc.abstractmethod
     def build_measure(self): pass
