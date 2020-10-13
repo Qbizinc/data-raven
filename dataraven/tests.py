@@ -1,6 +1,6 @@
 import abc
 
-from .measures import SQLNullMeasure, CSVNullMeasure
+from .measures import SQLNullMeasure, SQLDuplicateMeasure, SQLSetDuplicateMeasure, CSVNullMeasure
 from .test_logic import test_predicate_gt
 
 
@@ -87,8 +87,34 @@ class SQLNullTest(SQLTestFactory):
                               use_ansi=use_ansi)
 
     def build_measure(self):
-        measure = SQLNullMeasure(self.dialect, self.from_, *self.columns, where=self.where, use_ansi=self.use_ansi) \
+        measure = SQLNullMeasure(self.dialect, self.from_, *self.columns, where=self.where, use_ansi=self.use_ansi)\
             .factory()
+        return measure
+
+
+class SQLDuplicateTest(SQLTestFactory):
+    def __init__(self, dialect, from_, threshold, *columns, where=None, hard_fail=False, use_ansi=True):
+        description = "{column} in table {from_} should have fewer than {threshold} duplicate values."
+        predicate = test_predicate_gt
+        super().__init__(description, dialect, from_, predicate, threshold, *columns, where=where, hard_fail=hard_fail,
+                         use_ansi=use_ansi)
+
+    def build_measure(self):
+        measure = SQLDuplicateMeasure(self.dialect, self.from_, *self.columns, where=self.where,
+                                      use_ansi=self.use_ansi).factory()
+        return measure
+
+
+class SQLSetDuplicateTest(SQLTestFactory):
+    def __init__(self, dialect, from_, threshold, *columns, where=None, hard_fail=False, use_ansi=True):
+        description = "columns {column} in table {from_} should have fewer than {threshold} duplicate values."
+        predicate = test_predicate_gt
+        super().__init__(description, dialect, from_, predicate, threshold, *columns, where=where, hard_fail=hard_fail,
+                         use_ansi=use_ansi)
+
+    def build_measure(self):
+        measure = SQLSetDuplicateMeasure(self.dialect, self.from_, *self.columns, where=self.where,
+                                         use_ansi=self.use_ansi).factory()
         return measure
 
 
