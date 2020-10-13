@@ -133,6 +133,7 @@ dmypy.json
 
 # ignore test files
 test_.py
+unittests.py
 
 # ignore .DS_Store
 .DS_Store

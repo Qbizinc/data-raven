@@ -124,7 +124,14 @@ class SQLOperator(Operator):
 
         self.log_test_results(result_msgs, self.logger)
         self.raise_execpetion_if_fail(result_msgs, self.test)
-        return result_msgs
+
+        test_results = {
+            "measure_values": measure_values,
+            "threshold": self.test.threshold,
+            "test_outcomes": test_outcomes,
+            "result_messages": result_msgs
+        }
+        return test_results
 
 
 class CSVOperator(Operator):
@@ -156,7 +163,14 @@ class CSVOperator(Operator):
 
         self.log_test_results(result_msgs, self.logger)
         self.raise_execpetion_if_fail(result_msgs, self.test)
-        return result_msgs
+
+        test_results = {
+            "measure_values": measure_values,
+            "threshold": self.test.threshold,
+            "test_outcomes": test_outcomes,
+            "result_messages": result_msgs
+        }
+        return test_results
 
 
 class CustomOperator(Operator):
@@ -216,4 +230,11 @@ class CustomOperator(Operator):
         result_msgs = self.format_test_result_msgs(test_outcomes, descriptions)
         self.log_test_results(result_msgs, self.logger)
         self.raise_execpetion_if_fail(result_msgs, self.test)
+
+        test_results = {
+            "test_outcomes": test_outcomes,
+            "threshold": self.test.threshold,
+            "result_messages": result_msgs
+        }
+
         return result_msgs
