@@ -1,6 +1,6 @@
 import abc
 
-from .tests import CustomTestFactory, SQLNullTest, SQLDuplicateTest, SQLSetDuplicateTest, CSVNullTest
+from .tests import CustomTestFactory, SQLNullTest, SQLDuplicateTest, SQLSetDuplicateTest, CSVNullTest, CSVDuplicateTest
 from .operations import SQLOperator, CSVOperator, CustomOperator
 
 
@@ -160,6 +160,26 @@ class CSVNullCheckOperator(CSVDQOperator):
     def build_test(self):
         test = CSVNullTest(self.from_, self.threshold, *self.columns, delimiter=self.delimiter,
                            hard_fail=self.hard_fail).factory()
+        return test
+
+
+class CSVDuplicateCheckOperator(CSVDQOperator):
+    def __init__(
+            self,
+            from_,
+            logger,
+            threshold,
+            *columns,
+            delimiter=',',
+            hard_fail=None,
+            fieldnames=None
+    ):
+        super().__init__(from_, logger, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail,
+                         fieldnames=fieldnames)
+
+    def build_test(self):
+        test = CSVDuplicateTest(self.from_, self.threshold, *self.columns, delimiter=self.delimiter,
+                                hard_fail=self.hard_fail).factory()
         return test
 
 
