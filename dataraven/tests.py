@@ -5,7 +5,8 @@ from .test_logic import test_predicate_gt
 
 
 class Test(object):
-    def __init__(self, description=None, measure=None, threshold=None, predicate=None, hard_fail=False,
+    pass
+    '''def __init__(self, description=None, measure=None, threshold=None, predicate=None, hard_fail=False,
                  custom_test=None, custom_test_columns=None):
         self.description = description
         self.measure = measure
@@ -13,30 +14,47 @@ class Test(object):
         self.predicate = predicate
         self.hard_fail = hard_fail
         self.custom_test = custom_test
-        self.custom_test_columns = custom_test_columns
+        self.custom_test_columns = custom_test_columns'''
 
 
 class SQLTest(Test):
     def __init__(self, description, measure, threshold, predicate, hard_fail=False):
-        super().__init__(description=description, measure=measure, threshold=threshold, predicate=predicate,
-                         hard_fail=hard_fail)
+        self.description = description
+        self.measure = measure
+        self.threshold = threshold
+        self.predicate = predicate
+        self.hard_fail = hard_fail
+
+        #super().__init__(description=description, measure=measure, threshold=threshold, predicate=predicate,
+        #                 hard_fail=hard_fail)
 
 
 class CustomSQLTest(Test):
     def __init__(self, description, custom_test, *columns, threshold=None, hard_fail=False):
-        super().__init__(
+        self.description = description
+        self.custom_test = custom_test
+        self.columns = columns
+        self.threshold = threshold
+        self.hard_fail = hard_fail
+
+        '''super().__init__(
             description=description,
             custom_test=custom_test,
             custom_test_columns=columns,
             threshold=threshold,
             hard_fail=hard_fail
-        )
+        )'''
 
 
 class CSVTest(Test):
     def __init__(self, description, measure, threshold, predicate, hard_fail=False):
-        super().__init__(description=description, measure=measure, threshold=threshold, predicate=predicate,
-                         hard_fail=hard_fail)
+        self.description = description
+        self.measure = measure
+        self.threshold = threshold
+        self.predicate = predicate
+        self.hard_fail = hard_fail
+        #super().__init__(description=description, measure=measure, threshold=threshold, predicate=predicate,
+        #                 hard_fail=hard_fail)
 
 
 class TestFactory(object):

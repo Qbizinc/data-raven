@@ -185,7 +185,7 @@ class CustomOperator(Operator):
     def format_test_description(test, **kwargs):
         test_descriptions = {}
         description_template = test.description
-        columns = test.custom_test_columns
+        columns = test.columns
         threshold = test.threshold
 
         if columns:
@@ -206,7 +206,7 @@ class CustomOperator(Operator):
     def calcualte_test_results(self):
         test_outcomes = []
         query = self.test.custom_test
-        columns = self.test.custom_test_columns
+        columns = self.test.columns
         threshold = self.test.threshold
 
         if columns:
