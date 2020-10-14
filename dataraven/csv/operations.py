@@ -25,7 +25,7 @@ def apply_reducer(dataset, reducer, *columns, **kwargs):
     :return:
     """
     rowcnt = 0
-    accum = dict(zip(columns, [0] * len(columns)))
+    accum = {}
     for row in dataset:
         rowcnt += 1
         output = reducer(row, *columns, **kwargs)
@@ -38,6 +38,5 @@ def apply_reducer(dataset, reducer, *columns, **kwargs):
         for column in result:
             accum[column] = accum.get(column, 0) + result[column]
 
-    rowcnt -= 1  # offset for headers row
     results = {"rowcnt": rowcnt, "accum": accum}
     return results
