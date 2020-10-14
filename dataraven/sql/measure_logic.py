@@ -64,7 +64,7 @@ def measure_set_duplication(from_clause, *columns, where_clause=None):
 
     join_clause = sql.join(rows_query, uniques_query, onclause=rows_column != None)
 
-    measure_label = ','.join(columns)
+    measure_label = str(columns)
     measure_query = sql.select(
         [
             sql.case(
