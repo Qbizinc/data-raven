@@ -5,7 +5,7 @@ from sqlalchemy.sql import func, distinct
 from .sql.helpers import compile_to_dialect
 from .sql.measure_logic import measure_proportion_each_column, measure_set_duplication
 
-from .csv.reducers import measure_null, measure_duplicates
+from .csv.reducers import measure_null, measure_duplicates, measure_set_duplicates
 
 
 class Measure(object):
@@ -97,12 +97,10 @@ class SQLDuplicateMeasure(SQLMeasureFactory):
 
 class SQLSetDuplicateMeasure(SQLMeasureFactory):
     def __init__(self, dialect, from_, *columns, where=None, use_ansi=True):
-        columns_ = ','.join(columns)
-        super().__init__(dialect, from_, columns_, where=where, use_ansi=use_ansi)
+        super().__init__(dialect, from_, *columns, where=where, use_ansi=use_ansi)
 
     def build_measure_query(self):
-        columns = tuple(self.columns[0].split(','))
-        measure_query = measure_set_duplication(self.from_, *columns, where_clause=self.where)
+        measure_query = measure_set_duplication(self.from_, *self.columns, where_clause=self.where)
         return measure_query
 
 
@@ -135,3 +133,11 @@ class CSVDuplicateMeasure(CSVMeasureFactory):
 
     def build_reducer(self):
         return measure_duplicates
+
+
+class CSVSetDuplicateMeasure(CSVMeasureFactory):
+    def __init__(self, from_, *columns, delimiter=','):
+        super().__init__(from_, *columns, delimiter=delimiter)
+
+    def build_reducer(self):
+        return measure_set_duplicates
