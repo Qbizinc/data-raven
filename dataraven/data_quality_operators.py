@@ -1,7 +1,9 @@
 import abc
 
-from .tests import CustomTestFactory, SQLNullTest, SQLDuplicateTest, SQLSetDuplicateTest, CSVNullTest, CSVDuplicateTest
-from .operations import SQLOperator, CSVOperator, CustomOperator
+from .tests import CustomTestFactory, SQLNullTest, SQLDuplicateTest, SQLSetDuplicateTest, CSVNullTest, \
+    CSVDuplicateTest, CSVSetDuplicateTest
+
+from .operations import SQLOperations, SQLSetOperations, CSVOperations, CSVSetOperations, CustomSQLOperations
 
 
 class DQOperator(object):
@@ -39,7 +41,7 @@ class SQLDQOperator(DQOperator):
 
     def execute(self):
         test = self.build_test()
-        operator = SQLOperator(self.conn, self.logger, test)
+        operator = SQLOperations(self.conn, self.logger, test)
         test_results = operator.execute()
         return test_results
 
@@ -109,6 +111,12 @@ class SQLSetDuplicateCheckOperator(SQLDQOperator):
                                    hard_fail=self.hard_fail, use_ansi=self.use_ansi).factory()
         return test
 
+    def execute(self):
+        test = self.build_test()
+        operator = SQLSetOperations(self.conn, self.logger, test)
+        test_results = operator.execute()
+        return test_results
+
 
 class CSVDQOperator(DQOperator):
     def __init__(
@@ -138,7 +146,7 @@ class CSVDQOperator(DQOperator):
 
     def execute(self):
         test = self.build_test()
-        operator = CSVOperator(self.logger, test , fieldnames=self.fieldnames, **self.reducer_kwargs)
+        operator = CSVOperations(self.logger, test, fieldnames=self.fieldnames, **self.reducer_kwargs)
         test_results = operator.execute()
         return test_results
 
@@ -183,7 +191,33 @@ class CSVDuplicateCheckOperator(CSVDQOperator):
         return test
 
 
-class CustomDQOperator(DQOperator):
+class CSVSetDuplicateCheckOperator(CSVDQOperator):
+    def __init__(
+            self,
+            from_,
+            logger,
+            threshold,
+            *columns,
+            delimiter=',',
+            hard_fail=None,
+            fieldnames=None
+    ):
+        super().__init__(from_, logger, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail,
+                         fieldnames=fieldnames)
+
+    def build_test(self):
+        test = CSVSetDuplicateTest(self.from_, self.threshold, *self.columns, delimiter=self.delimiter,
+                                   hard_fail=self.hard_fail).factory()
+        return test
+
+    def execute(self):
+        test = self.build_test()
+        operator = CSVSetOperations(self.logger, test, fieldnames=self.fieldnames, **self.reducer_kwargs)
+        test_results = operator.execute()
+        return test_results
+
+
+class CustomSQLDQOperator(DQOperator):
     def __init__(
             self,
             conn,
@@ -213,6 +247,8 @@ class CustomDQOperator(DQOperator):
 
     def execute(self):
         test = self.build_test()
-        operator = CustomOperator(self.conn, self.logger, test, **self.test_desc_kwargs)
+        print("test", test.columns)
+        operator = CustomSQLOperations(self.conn, self.logger, test, **self.test_desc_kwargs)
+        print("operator", operator)
         test_results = operator.execute()
         return test_results
