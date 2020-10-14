@@ -1,6 +1,8 @@
 import abc
 
-from .measures import SQLNullMeasure, SQLDuplicateMeasure, SQLSetDuplicateMeasure, CSVNullMeasure, CSVDuplicateMeasure
+from .measures import SQLNullMeasure, SQLDuplicateMeasure, SQLSetDuplicateMeasure, CSVNullMeasure, \
+    CSVDuplicateMeasure, CSVSetDuplicateMeasure
+
 from .test_logic import test_predicate_gt
 
 
@@ -150,10 +152,21 @@ class CSVNullTest(CSVTestFactory):
 
 class CSVDuplicateTest(CSVTestFactory):
     def __init__(self, from_, threshold, *columns, delimiter=',', hard_fail=False):
-        description = "{column} in document {from_} should have fewer than {threshold} null values."
+        description = "{column} in document {from_} should have fewer than {threshold} duplicate values."
         predicate = test_predicate_gt
         super().__init__(description, from_, predicate, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail)
 
     def build_measure(self):
         measure = CSVDuplicateMeasure(self.from_, *self.columns, delimiter=self.delimiter).factory()
+        return measure
+
+
+class CSVSetDuplicateTest(CSVTestFactory):
+    def __init__(self, from_, threshold, *columns, delimiter=',', hard_fail=False):
+        description = "columns {column} in document {from_} should have fewer than {threshold} duplicate values."
+        predicate = test_predicate_gt
+        super().__init__(description, from_, predicate, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail)
+
+    def build_measure(self):
+        measure = CSVSetDuplicateMeasure(self.from_,  *self.columns, delimiter=self.delimiter).factory()
         return measure
