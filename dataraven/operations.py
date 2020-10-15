@@ -25,10 +25,13 @@ class Operations(object):
 
     @staticmethod
     def format_test_result_msgs(test_outcomes, test_descriptions):
-        test_result_msgs = []
-        for test_outcome in test_outcomes:
-            column = test_outcome["column"]
-            description = test_descriptions[column]
+        test_result_msgs = {}
+        for column in test_outcomes:
+            description = test_descriptions.get(column)
+            # if not found then try no_column. or is it better to pass the test object and get the columns directly?
+            if description is None:
+                description = test_descriptions.get("no_column")
+            test_outcome = test_outcomes[column]
             result = test_outcome["result"]
             measure = test_outcome["measure"]
             threshold = test_outcome["threshold"]
@@ -37,33 +40,31 @@ class Operations(object):
             result_message = result_template.format(description=description, result=result, measure=measure,
                                                     threshold=threshold)
 
-            test_result_msg = {"result_msg": result_message, "outcome": result, "column": column}
-            test_result_msgs.append(test_result_msg)
+            test_result_msgs[column] = {"result_msg": result_message, "outcome": result}
         return test_result_msgs
 
     def build_test_outcomes(self, measure_values):
-        test_outcomes = []
+        test_outcomes = {}
         threshold = self.test.threshold
         predicate = self.test.predicate
         for column in measure_values:
             threshold_ = self.parse_dict_param(threshold, column)
             measure_value = measure_values[column]
             test_result = predicate(measure_value, threshold_)
-            test_outcome = {"column": column, "result": test_result, "measure": measure_value,
-                            "threshold": threshold_}
-            test_outcomes.append(test_outcome)
+            test_outcomes[column] = {"result": test_result, "measure": measure_value, "threshold": threshold_}
         return test_outcomes
 
     def log_test_results(self, test_results):
-        for test_result in test_results:
+        for column in test_results:
+            test_result = test_results[column]
             result_msg = test_result["result_msg"]
             self.logger(result_msg)
         return True
 
     def raise_execpetion_if_fail(self, test_result_msgs):
         hard_fail = self.test.hard_fail
-        for test_result in test_result_msgs:
-            column = test_result["column"]
+        for column in test_result_msgs:
+            test_result = test_result_msgs[column]
             hard_fail_ = self.parse_dict_param(hard_fail, column)
             if hard_fail_ is True:
                 outcome = test_result["outcome"]
@@ -91,8 +92,6 @@ class Operations(object):
         self.raise_execpetion_if_fail(result_msgs)
 
         test_results = {
-            "measure_values": measure_values,
-            "threshold": self.test.threshold,
             "test_outcomes": test_outcomes,
             "result_messages": result_msgs
         }
@@ -224,10 +223,17 @@ class CustomSQLOperations(Operations):
         else:
             description = description_template.format(**kwargs)
             test_descriptions["no_column"] = description
+
         return test_descriptions
 
     def calcualte_test_results(self):
-        test_outcomes = []
+        def format_test_outcome(outcome):
+            measure = outcome.get("measure")
+            threshold = outcome.get("threshold")
+            result = outcome["result"]
+            return {"result": result, "measure": measure, "threshold": threshold}
+
+        test_outcomes = {}
         query = self.test.test
         columns = self.test.columns
         threshold = self.test.threshold
@@ -237,10 +243,11 @@ class CustomSQLOperations(Operations):
                 threshold_ = self.parse_dict_param(threshold, column)
                 query_ = query.format(column=column, threshold=threshold_)
                 test_outcome = FetchQueryResults(self.conn, query_).get_results()
-                test_outcomes.append(test_outcome)
+                test_outcomes[column] = format_test_outcome(test_outcome)
         else:
             test_outcome = FetchQueryResults(self.conn, query).get_results()
-            test_outcomes.append(test_outcome)
+            column = test_outcome["column"]
+            test_outcomes[column] = format_test_outcome(test_outcome)
         return test_outcomes
 
     def execute(self):
@@ -252,7 +259,6 @@ class CustomSQLOperations(Operations):
 
         test_results = {
             "test_outcomes": test_outcomes,
-            "threshold": self.test.threshold,
             "result_messages": result_msgs
         }
 
