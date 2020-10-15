@@ -247,8 +247,6 @@ class CustomSQLDQOperator(DQOperator):
 
     def execute(self):
         test = self.build_test()
-        print("test", test.columns)
         operator = CustomSQLOperations(self.conn, self.logger, test, **self.test_desc_kwargs)
-        print("operator", operator)
         test_results = operator.execute()
         return test_results
