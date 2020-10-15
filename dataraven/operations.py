@@ -1,6 +1,7 @@
 import abc
 
 from .exception_handling import TestFailure
+from .common import test_reuslt_msg_template
 
 from .sql.operations import FetchQueryResults
 from .csv.operations import get_csv_document, apply_reducer
@@ -38,13 +39,11 @@ class Operations(object):
             measure = test_outcome["measure"]
             threshold = test_outcome["threshold"]
 
-            test_result_msg = f"""
-                                      Test description: {description}
-                                      Test outcome: {result}
-                                      Test measure: {measure}
-                                      Test threshold: {threshold}
-                                      """
-            test_result_msg = {"result_msg": test_result_msg, "outcome": result, "column": column}
+            result_template = test_reuslt_msg_template()
+            result_message = result_template.format(description=description, result=result, measure=measure,
+                                                    threshold=threshold)
+            
+            test_result_msg = {"result_msg": result_message, "outcome": result, "column": column}
             test_result_msgs.append(test_result_msg)
         return test_result_msgs
 
