@@ -42,7 +42,7 @@ class Operations(object):
             result_template = test_reuslt_msg_template()
             result_message = result_template.format(description=description, result=result, measure=measure,
                                                     threshold=threshold)
-            
+
             test_result_msg = {"result_msg": result_message, "outcome": result, "column": column}
             test_result_msgs.append(test_result_msg)
         return test_result_msgs
