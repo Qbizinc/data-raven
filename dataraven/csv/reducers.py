@@ -53,10 +53,11 @@ def measure_set_duplicates(row, *columns, collection=None):
     values = tuple(map(lambda col: row[col], columns))
     key = tuple(zip(columns, values))
 
+    columns_label = ", ".join(columns)
     if key not in collection:
         collection[key] = None
-        result = {columns: 0}
+        result = {columns_label: 0}
     else:
-        result = {columns: 1}
+        result = {columns_label: 1}
     output = {"result": result, "collection": collection}
     return output
