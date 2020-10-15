@@ -5,7 +5,7 @@ from .common import test_reuslt_msg_template, hard_fail_msg_template
 
 from .sql.operations import FetchQueryResults
 from .csv.operations import get_csv_document, apply_reducer
-from .csv.measure_logic import build_measure_proportion_values
+#from .csv.measure_logic import build_measure_proportion_values
 
 
 class Operations(object):
@@ -123,6 +123,7 @@ class SQLOperations(Operations):
         measure = self.test.measure
         query = measure.query
         measure_values = FetchQueryResults(self.conn, query).get_results()
+        print("measure_values", measure_values)
         return measure_values
 
 
@@ -144,6 +145,7 @@ class SQLSetOperations(SQLOperations):
         description = description_template.format(**description_kwargs)
         columns_ = str(columns)
         descriptions[columns_] = description
+        #descriptions[columns] = description
         return descriptions
 
 
@@ -177,7 +179,23 @@ class CSVOperations(Operations):
         columns = measure.columns
         document = get_csv_document(path, delimiter=delimiter, fieldnames=self.fieldnames)
         reducer_results = apply_reducer(document, reducer, *columns, **self.reducer_kwargs)
-        measure_values = build_measure_proportion_values(reducer_results)
+        print(reducer_results)
+        measure_values = self.build_measure_proportion_values(reducer_results)
+        return measure_values
+
+    @staticmethod
+    def build_measure_proportion_values(results):
+        measure_values = {}
+        rowcnt = results["rowcnt"]
+        if rowcnt == 0:
+            raise ValueError(f"rowcnt must be greater than 0.")
+
+        accum = results["accum"]
+        for column in accum:
+            result = accum[column]
+            measure_value = result / rowcnt
+            measure_values[column] = measure_value
+
         return measure_values
 
 
@@ -197,7 +215,7 @@ class CSVSetOperations(CSVOperations):
         from_ = measure.from_
         description_kwargs["from_"] = from_
         description = description_template.format(**description_kwargs)
-        descriptions[columns] = description
+        descriptions[columns_] = description
         return descriptions
 
 
