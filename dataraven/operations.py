@@ -123,7 +123,6 @@ class SQLOperations(Operations):
         measure = self.test.measure
         query = measure.query
         measure_values = FetchQueryResults(self.conn, query).get_results()
-        print("measure_values", measure_values)
         return measure_values
 
 
@@ -177,7 +176,6 @@ class CSVOperations(Operations):
         columns = measure.columns
         document = get_csv_document(path, delimiter=delimiter, fieldnames=self.fieldnames)
         reducer_results = apply_reducer(document, reducer, *columns, **self.reducer_kwargs)
-        print(reducer_results)
         measure_values = self.build_measure_proportion_values(reducer_results)
         return measure_values
 
