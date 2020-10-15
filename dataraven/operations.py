@@ -138,14 +138,12 @@ class SQLSetOperations(SQLOperations):
         description_kwargs["threshold"] = threshold
         measure = self.test.measure
         columns = measure.columns
-        columns_ = ", ".join(columns)
+        columns_ = ",".join(columns)
         description_kwargs["column"] = columns_
         from_ = measure.from_
         description_kwargs["from_"] = from_
         description = description_template.format(**description_kwargs)
-        columns_ = str(columns)
         descriptions[columns_] = description
-        #descriptions[columns] = description
         return descriptions
 
 
@@ -210,7 +208,7 @@ class CSVSetOperations(CSVOperations):
         description_kwargs["threshold"] = threshold
         measure = self.test.measure
         columns = measure.columns
-        columns_ = ", ".join(columns)
+        columns_ = ",".join(columns)
         description_kwargs["column"] = columns_
         from_ = measure.from_
         description_kwargs["from_"] = from_
