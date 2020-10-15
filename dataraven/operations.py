@@ -1,7 +1,7 @@
 import abc
 
 from .exception_handling import TestFailure
-from .common import test_reuslt_msg_template
+from .common import test_reuslt_msg_template, hard_fail_msg_template
 
 from .sql.operations import FetchQueryResults
 from .csv.operations import get_csv_document, apply_reducer
@@ -13,21 +13,15 @@ class Operations(object):
         self.logger = logger
         self.test = test
 
-    def build_test_outcomes(self, measure_values):
-        test_outcomes = []
-        threshold = self.test.threshold
-        predicate = self.test.predicate
-        for column in measure_values:
-            if isinstance(threshold, dict):
-                threshold_ = threshold[column]
-            else:
-                threshold_ = threshold
-            measure_value = measure_values[column]
-            test_result = predicate(measure_value, threshold_)
-            test_outcome = {"column": column, "result": test_result, "measure": measure_value,
-                            "threshold": threshold_}
-            test_outcomes.append(test_outcome)
-        return test_outcomes
+    @staticmethod
+    def parse_dict_param(param, column):
+        if isinstance(param, dict):
+            if column not in param:
+                raise KeyError(f"column name {column} not found in param {param}")
+            param_ = param[column]
+        else:
+            param_ = param
+        return param_
 
     @staticmethod
     def format_test_result_msgs(test_outcomes, test_descriptions):
@@ -47,6 +41,19 @@ class Operations(object):
             test_result_msgs.append(test_result_msg)
         return test_result_msgs
 
+    def build_test_outcomes(self, measure_values):
+        test_outcomes = []
+        threshold = self.test.threshold
+        predicate = self.test.predicate
+        for column in measure_values:
+            threshold_ = self.parse_dict_param(threshold, column)
+            measure_value = measure_values[column]
+            test_result = predicate(measure_value, threshold_)
+            test_outcome = {"column": column, "result": test_result, "measure": measure_value,
+                            "threshold": threshold_}
+            test_outcomes.append(test_outcome)
+        return test_outcomes
+
     def log_test_results(self, test_results):
         for test_result in test_results:
             result_msg = test_result["result_msg"]
@@ -56,19 +63,14 @@ class Operations(object):
     def raise_execpetion_if_fail(self, test_result_msgs):
         hard_fail = self.test.hard_fail
         for test_result in test_result_msgs:
-            if isinstance(hard_fail, dict):
-                column = test_result["column"]
-                hard_fail_ = hard_fail[column]
-            else:
-                hard_fail_ = hard_fail
+            column = test_result["column"]
+            hard_fail_ = self.parse_dict_param(hard_fail, column)
             if hard_fail_ is True:
                 outcome = test_result["outcome"]
                 if outcome == "test_fail":
                     result_msg = test_result["result_msg"]
-                    error_msg = f""" 
-                        Hard fail condition met.
-                        {result_msg}
-                        """
+                    error_msg_template = hard_fail_msg_template()
+                    error_msg = error_msg_template.format(result_msg=result_msg)
                     raise TestFailure(error_msg)
         return True
 
@@ -111,10 +113,7 @@ class SQLOperations(Operations):
         from_ = measure.from_
         description_kwargs["from_"] = from_
         for column in columns:
-            if isinstance(threshold, dict):
-                threshold_ = threshold[column]
-            else:
-                threshold_ = threshold
+            threshold_ = self.parse_dict_param(threshold, column)
             description_kwargs["threshold"] = threshold_
             description_kwargs["column"] = column
             description = description_template.format(**description_kwargs)
@@ -164,10 +163,7 @@ class CSVOperations(Operations):
         from_ = measure.from_
         description_kwargs["from_"] = from_
         for column in columns:
-            if isinstance(threshold, dict):
-                threshold_ = threshold[column]
-            else:
-                threshold_ = threshold
+            threshold_ = self.parse_dict_param(threshold, column)
             description_kwargs["threshold"] = threshold_
             description_kwargs["column"] = column
             description = description_template.format(**description_kwargs)
@@ -220,10 +216,7 @@ class CustomSQLOperations(Operations):
 
         if columns:
             for column in columns:
-                if isinstance(threshold, dict):
-                    threshold_ = threshold[column]
-                else:
-                    threshold_ = threshold
+                threshold_ = self.parse_dict_param(threshold, column)
                 kwargs["threshold"] = threshold_
                 kwargs["column"] = column
                 description = description_template.format(**kwargs)
@@ -241,10 +234,7 @@ class CustomSQLOperations(Operations):
 
         if columns:
             for column in columns:
-                if isinstance(threshold, dict):
-                    threshold_ = threshold[column]
-                else:
-                    threshold_ = threshold
+                threshold_ = self.parse_dict_param(threshold, column)
                 query_ = query.format(column=column, threshold=threshold_)
                 test_outcome = FetchQueryResults(self.conn, query_).get_results()
                 test_outcomes.append(test_outcome)
