@@ -5,7 +5,6 @@ from .common import test_reuslt_msg_template, hard_fail_msg_template
 
 from .sql.operations import FetchQueryResults
 from .csv.operations import get_csv_document, apply_reducer
-#from .csv.measure_logic import build_measure_proportion_values
 
 
 class Operations(object):
