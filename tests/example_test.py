@@ -6,11 +6,19 @@ from dataraven.data_quality_operators import SQLNullCheckOperator, SQLDuplicateC
     SQLSetDuplicateCheckOperator
 
 
-logging.basicConfig(filename="test.log", level=logging.DEBUG,
-                    format="%(asctime)s | %(name)s | %(levelname)s | \n%(message)s\n")
+def init_logging(logfile="example_test.log"):
+    logging.basicConfig(filename=logfile, level=logging.DEBUG,
+                        format="%(asctime)s | %(name)s | %(levelname)s | \n%(message)s\n")
+    handler = logging.FileHandler(logfile)
+    logger = logging.getLogger(__name__)
+    logger.addHandler(handler)
+    return logger.info
 
 
 def main():
+    # initialize logging
+    logger = init_logging()
+
     # database connection credentials
     user = os.environ["user"]
     password = os.environ["password"]
@@ -18,14 +26,9 @@ def main():
     dbname = os.environ["dbname"]
     port = os.environ["port"]
 
-
     # postgres database connector
-    error_logger = logging.error
-    conn = PostgresConnector(user, password, host, dbname, port, logger=error_logger)
+    conn = PostgresConnector(user, password, host, dbname, port, logger=logger)
     dialect = "postgres"
-
-    # logging application
-    logger = logging.info
 
     # test thresholds
     threshold0 = 0
@@ -39,26 +42,27 @@ def main():
 
     # test for duplicates
     orders_duplicates_test_column = "id"
-    SQLDuplicateCheckOperator(conn, dialect, orders_from_clause, logger, threshold0, orders_duplicates_test_column,
-                              where=orders_where_clause)
+    SQLDuplicateCheckOperator(conn, dialect, orders_from_clause, threshold0, orders_duplicates_test_column,
+                              where=orders_where_clause, logger=logger)
 
     # test multiple columns using one threshold
     orders_null_test_columns = ("name", "product_id", "price")
-    SQLNullCheckOperator(conn, dialect, orders_from_clause, logger, threshold0, *orders_null_test_columns,
-                         where=orders_where_clause)
+    SQLNullCheckOperator(conn, dialect, orders_from_clause, threshold0, *orders_null_test_columns,
+                         where=orders_where_clause, logger=logger)
 
     ##### TEST CONTACTS TABLE #####
     contacts_from_clause = "test_schema.Contacts"
 
     # test first_name-last_name for duplicates
     contacts_duplicats_test_columns = ("first_name", "last_name")
-    SQLSetDuplicateCheckOperator(conn, dialect, contacts_from_clause, logger, threshold0,
-                                 *contacts_duplicats_test_columns)
+    SQLSetDuplicateCheckOperator(conn, dialect, contacts_from_clause, threshold0, *contacts_duplicats_test_columns,
+                                 logger=logger)
 
     # test email, state for null values
     contacts_null_columns = ("email", "country")
     contacts_null_threshold = {"email": threshold10, "country": 0.5}
-    SQLNullCheckOperator(conn, dialect, contacts_from_clause, logger, contacts_null_threshold, *contacts_null_columns)
+    SQLNullCheckOperator(conn, dialect, contacts_from_clause, contacts_null_threshold, *contacts_null_columns,
+                         logger=logger)
 
 
     ##### TEST EARTHQUAKES TABLE #####
@@ -77,7 +81,7 @@ def main():
         from test_schema.Earthquakes
         where magnitude > 10)t
         """
-    CustomSQLDQOperator(conn, magnitude_bounds_test_query, magnitude_bounds_test_description, logger)
+    CustomSQLDQOperator(conn, magnitude_bounds_test_query, magnitude_bounds_test_description, logger=logger)
 
     # test columns for blank values
     earthquakes_columns = ("state", "epicenter", "date", "magnitude")
@@ -106,14 +110,10 @@ def main():
         conn,
         earthquake_col_not_blank_query,
         earthquake_col_not_blank_description,
-        logger,
         *earthquakes_columns,
-        threshold=earthquake_null_thresholds
+        threshold=earthquake_null_thresholds,
+        logger=logger
     )
-
-
-
-
 
 
 if __name__ == "__main__":
