@@ -7,17 +7,36 @@ from dataraven.data_quality_operators import SQLNullCheckOperator, SQLDuplicateC
 
 
 def init_logging(logfile="example_test.log"):
-    logging.basicConfig(filename=logfile, level=logging.DEBUG,
-                        format="%(asctime)s | %(name)s | %(levelname)s | \n%(message)s\n")
+    # remove previous run log file
+    if os.path.exists(logfile):
+        os.remove(logfile)
+
+    # create log message formatting
+    format = "%(asctime)s | %(name)s | %(levelname)s | \n%(message)s\n"
+    formatter = logging.Formatter(format)
+
+    # create log level
+    level = logging.DEBUG
+
+    # create file handler
     handler = logging.FileHandler(logfile)
+
+    # set log formatter and level
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
+
+    # create logger function
     logger = logging.getLogger(__name__)
+
+    # set logger level and handler
+    logger.setLevel(level)
     logger.addHandler(handler)
-    return logger.info
+    return logger
 
 
 def main():
     # initialize logging
-    logger = init_logging()
+    logger = init_logging().info
 
     # database connection credentials
     user = os.environ["user"]
