@@ -256,7 +256,7 @@ class TestSQLMeasureLogic(unittest.TestCase):
         query1_target_ = th.strip_all_space(query1_target)
         self.assertEqual(query_, query1_target_)
 
-    def test_measure_proportion_null(self):
+    def test_measure_set_duplication(self):
         from_clause = th.from_clause
         columns = ("col1", "col2")
         query = measure_set_duplication(from_clause, *columns)
@@ -271,6 +271,103 @@ class TestSQLMeasureLogic(unittest.TestCase):
         """.lower()
         query_target_ = th.strip_all_space(query_target)
         self.assertEqual(query_, query_target_)
+
+
+class TestFetchQueryResults(unittest.TestCase):
+    def test_execute_query(self):
+        pass
+
+    def test_fetch_results(self):
+        pass
+
+
+class TestOperations(unittest.TestCase):
+    def test_parse_dict_param(self):
+        pass
+
+    def test_format_test_result_msgs(self):
+        pass
+
+    def test_build_test_outcomes(self):
+        pass
+
+    def test_log_test_results(self):
+        pass
+
+    def test_raise_execpetion_if_fail(self):
+        pass
+
+    def test_execute(self):
+        pass
+
+
+class TestSQLOperations(unittest.TestCase):
+    def test_format_test_description(self):
+        pass
+
+    def test_calculate_measure_values(self):
+        pass
+
+
+class TestSQLSetOperations(unittest.TestCase):
+    def test_format_test_description(self):
+        pass
+
+
+class TestCSVOperations(unittest.TestCase):
+    def test_format_test_description(self):
+        pass
+
+    def test_calculate_measure_values(self):
+        pass
+
+    def test_build_measure_proportion_values(self):
+        pass
+
+
+class TestCSVSetOperations(unittest.TestCase):
+    def test_format_test_description(self):
+        pass
+
+
+class TestCustomSQLOperations(unittest.TestCase):
+    def test_format_test_description(self):
+        pass
+
+    def test_calcualte_test_results(self):
+        pass
+
+    def test_execute(self):
+        pass
+
+
+class TestSQLNullMeasure(unittest.TestCase):
+    def test_build_measure_query(self):
+        pass
+
+    def test_factory(self):
+        pass
+
+
+class TestSQLNullTest(unittest.TestCase):
+    def test_build_measure(self):
+        pass
+
+    def test_factory(self):
+        pass
+
+
+class TestCSVNullTest(unittest.TestCase):
+    def test_build_measure(self):
+        pass
+
+    def test_factory(self):
+        pass
+
+
+class TestCustomTestFactory(unittest.TestCase):
+    def test_factory(self):
+        pass
 
 
 class TestDataQualityOperators(unittest.TestCase):
