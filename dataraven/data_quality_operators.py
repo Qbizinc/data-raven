@@ -1,5 +1,6 @@
 import abc
 
+from .log import get_null_logger
 from .tests import CustomTestFactory, SQLNullTest, SQLDuplicateTest, SQLSetDuplicateTest, CSVNullTest, \
     CSVDuplicateTest, CSVSetDuplicateTest
 
@@ -17,9 +18,9 @@ class SQLDQOperator(DQOperator):
             conn,
             dialect,
             from_,
-            logger,
             threshold,
             *columns,
+            logger=None,
             where=None,
             hard_fail=None,
             use_ansi=True
@@ -28,11 +29,12 @@ class SQLDQOperator(DQOperator):
         self.threshold = threshold
         self.dialect = dialect
         self.from_ = from_
-        self.logger = logger
         self.columns = columns
         self.where = where
         self.hard_fail = hard_fail
         self.use_ansi = use_ansi
+
+        self.logger = logger if logger is not None else get_null_logger().info
 
         self.test_results = self.execute()
 
@@ -52,14 +54,14 @@ class SQLNullCheckOperator(SQLDQOperator):
             conn,
             dialect,
             from_,
-            logger,
             threshold,
             *columns,
+            logger=None,
             where=None,
             hard_fail=None,
             use_ansi=True
     ):
-        super().__init__(conn, dialect, from_, logger, threshold, *columns, where=where, hard_fail=hard_fail,
+        super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
     def build_test(self):
@@ -74,14 +76,14 @@ class SQLDuplicateCheckOperator(SQLDQOperator):
             conn,
             dialect,
             from_,
-            logger,
             threshold,
             *columns,
+            logger=None,
             where=None,
             hard_fail=None,
             use_ansi=True
     ):
-        super().__init__(conn, dialect, from_, logger, threshold, *columns, where=where, hard_fail=hard_fail,
+        super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
     def build_test(self):
@@ -96,14 +98,14 @@ class SQLSetDuplicateCheckOperator(SQLDQOperator):
             conn,
             dialect,
             from_,
-            logger,
             threshold,
             *columns,
+            logger=None,
             where=None,
             hard_fail=None,
             use_ansi=True
     ):
-        super().__init__(conn, dialect, from_, logger, threshold, *columns, where=where, hard_fail=hard_fail,
+        super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
     def build_test(self):
@@ -122,22 +124,23 @@ class CSVDQOperator(DQOperator):
     def __init__(
             self,
             from_,
-            logger,
             threshold,
             *columns,
             delimiter=',',
             hard_fail=None,
             fieldnames=None,
+            logger=None,
             **reducer_kwargs
     ):
         self.from_ = from_
         self.threshold = threshold
-        self.logger = logger
         self.columns = columns
         self.delimiter = delimiter
         self.hard_fail = hard_fail
         self.fieldnames = fieldnames
         self.reducer_kwargs = reducer_kwargs
+
+        self.logger = logger if logger is not None else get_null_logger().info
 
         self.test_results = self.execute()
 
@@ -155,15 +158,16 @@ class CSVNullCheckOperator(CSVDQOperator):
     def __init__(
             self,
             from_,
-            logger,
             threshold,
             *columns,
             delimiter=',',
             hard_fail=None,
-            fieldnames=None
+            fieldnames=None,
+            logger=None
+
     ):
         super().__init__(from_, logger, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail,
-                         fieldnames=fieldnames)
+                         fieldnames=fieldnames, logger=logger)
 
     def build_test(self):
         test = CSVNullTest(self.from_, self.threshold, *self.columns, delimiter=self.delimiter,
@@ -175,15 +179,15 @@ class CSVDuplicateCheckOperator(CSVDQOperator):
     def __init__(
             self,
             from_,
-            logger,
             threshold,
             *columns,
             delimiter=',',
             hard_fail=None,
-            fieldnames=None
+            fieldnames=None,
+            logger=None
     ):
-        super().__init__(from_, logger, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail,
-                         fieldnames=fieldnames)
+        super().__init__(from_, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail, fieldnames=fieldnames,
+                         logger=logger)
 
     def build_test(self):
         test = CSVDuplicateTest(self.from_, self.threshold, *self.columns, delimiter=self.delimiter,
@@ -195,15 +199,15 @@ class CSVSetDuplicateCheckOperator(CSVDQOperator):
     def __init__(
             self,
             from_,
-            logger,
             threshold,
             *columns,
             delimiter=',',
             hard_fail=None,
-            fieldnames=None
+            fieldnames=None,
+            logger=None
     ):
-        super().__init__(from_, logger, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail,
-                         fieldnames=fieldnames)
+        super().__init__(from_, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail, fieldnames=fieldnames,
+                         logger=logger)
 
     def build_test(self):
         test = CSVSetDuplicateTest(self.from_, self.threshold, *self.columns, delimiter=self.delimiter,
@@ -223,20 +227,21 @@ class CustomSQLDQOperator(DQOperator):
             conn,
             custom_test,
             description,
-            logger,
             *columns,
             threshold=None,
             hard_fail=None,
+            logger=None,
             **test_desc_kwargs
     ):
         self.conn = conn
         self.description = description
         self.custom_test = custom_test
-        self.logger = logger
         self.columns = columns
         self.threshold = threshold
         self.hard_fail = hard_fail
         self.test_desc_kwargs = test_desc_kwargs
+
+        self.logger = logger if logger is not None else get_null_logger().info
 
         self.test_results = self.execute()
 
