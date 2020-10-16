@@ -21,7 +21,7 @@ class DBConnector(object):
         self.dbname = dbname
         self.port = port
         self.conn = None
-        self.logger = logger if logger is not None else get_null_logger()
+        self.logger = logger if logger is not None else get_null_logger().debug
 
     def __get_credential(self):
         pass
