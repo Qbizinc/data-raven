@@ -1,7 +1,13 @@
 import os
+import logging
 
 from dataraven.connections import PostgresConnector
-from dataraven.data_quality_operators import SQLNullCheckOperator, SQLDuplicateCheckOperator
+from dataraven.data_quality_operators import SQLNullCheckOperator, SQLDuplicateCheckOperator, CustomSQLDQOperator,\
+    SQLSetDuplicateCheckOperator
+
+
+logging.basicConfig(filename="test.log", level=logging.DEBUG,
+                    format="%(asctime)s | %(name)s | %(levelname)s | \n%(message)s\n")
 
 
 def main():
@@ -14,11 +20,12 @@ def main():
 
 
     # postgres database connector
-    conn = PostgresConnector(user, password, host, dbname, port)
+    error_logger = logging.error
+    conn = PostgresConnector(user, password, host, dbname, port, logger=error_logger)
     dialect = "postgres"
 
     # logging application
-    logger = lambda msg: print(msg)
+    logger = logging.info
 
     # test thresholds
     threshold0 = 0
@@ -41,16 +48,17 @@ def main():
                          where=orders_where_clause)
 
     ##### TEST CONTACTS TABLE #####
-    '''contacts_from_clause = "test_schema.Contacts"
+    contacts_from_clause = "test_schema.Contacts"
 
     # test first_name-last_name for duplicates
     contacts_duplicats_test_columns = ("first_name", "last_name")
-    multi_proportion_duplicate_sql_test(conn, contacts_from_clause, threshold0, *contacts_duplicats_test_columns,
-                                               logger=logger)
+    SQLSetDuplicateCheckOperator(conn, dialect, contacts_from_clause, logger, threshold0,
+                                 *contacts_duplicats_test_columns)
 
     # test email, state for null values
-    contacts_null_test_columns = ("email", "country")
-    proportion_null_sql_test(conn, contacts_from_clause, threshold10, *contacts_null_test_columns, logger=logger)
+    contacts_null_columns = ("email", "country")
+    contacts_null_threshold = {"email": threshold10, "country": 0.5}
+    SQLNullCheckOperator(conn, dialect, contacts_from_clause, logger, contacts_null_threshold, *contacts_null_columns)
 
 
     ##### TEST EARTHQUAKES TABLE #####
@@ -69,17 +77,43 @@ def main():
         from test_schema.Earthquakes
         where magnitude > 10)t
         """
-    custom_sql_test(conn, magnitude_bounds_test_description, magnitude_bounds_test_query, logger=logger)
+    CustomSQLDQOperator(conn, magnitude_bounds_test_query, magnitude_bounds_test_description, logger)
 
-    earthquakes_from_clause = "test_schema.Earthquakes"
+    # test columns for blank values
+    earthquakes_columns = ("state", "epicenter", "date", "magnitude")
+    earthquake_null_thresholds = {"state": threshold0, "epicenter": threshold5, "date": threshold1,
+                                  "magnitude": threshold0}
+    earthquake_col_not_blank_description = "{column} in table test_schema.Earthquakes should have fewer than {threshold} BLANK values."
+    earthquake_col_not_blank_query = """
+    select      
+    case
+        when measure is NULL then 'test_fail'
+        when measure > {threshold} then 'test_fail'
+        else 'test_pass'
+    end as result,
+    measure,
+    {threshold} as threshold
+    from
+    (select 
+    case when rows_ > 0 then cast(blank_cnt as float) / rows_ end as measure
+    from
+    (select 
+    count(1) as rows_,
+    sum(case when cast({column} as varchar) = '' then 1 else 0 end) as blank_cnt
+    from test_schema.Earthquakes)t)tt
+    """
+    CustomSQLDQOperator(
+        conn,
+        earthquake_col_not_blank_query,
+        earthquake_col_not_blank_description,
+        logger,
+        *earthquakes_columns,
+        threshold=earthquake_null_thresholds
+    )
 
-    # test state, epicenter, date, magnitude columns for null values
-    earthquakes_test_columns = ("state", "epicenter", "date", "magnitude")
 
-    earthquake_null_test_thresholds= {"state": threshold0, "epicenter": threshold5, "date": threshold1,
-                                      "magnitude": threshold0}
-    proportion_null_sql_test(conn, earthquakes_from_clause, earthquake_null_test_thresholds, *earthquakes_test_columns,
-                             logger=logger, hard_fail=True)'''
+
+
 
 
 if __name__ == "__main__":
