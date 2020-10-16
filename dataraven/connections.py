@@ -31,20 +31,20 @@ class DBConnector(object):
         :param credential: database login crediential
         :return: sqlalchemy.engine.base.Engine object
         """
-        @try_except(self.logger)
-        def apply():
-            engine = db.create_engine(credential)
-            return engine
-        return apply()
+        engine = db.create_engine(credential)
+        return engine
 
     def get_conn(self, credential):
         """
         :param credential: database login crediential
         :return: sqlalchemy.engine.base.Connection object
         """
-        engine = self.__get_engine(credential)
-        conn = engine.connect()
-        return conn
+        @try_except(self.logger)
+        def apply():
+            engine = self.__get_engine(credential)
+            conn = engine.connect()
+            return conn
+        return apply()
 
     def execute(self, query):
         """
@@ -75,8 +75,8 @@ class DBConnector(object):
 
 
 class PostgresConnector(DBConnector):
-    def __init__(self, user, password, host, dbname, port):
-        super().__init__(user, password, host, dbname, port)
+    def __init__(self, user, password, host, dbname, port, logger=None):
+        super().__init__(user, password, host, dbname, port, logger=logger)
         credential = self.__get_credential()
         self.conn = self.get_conn(credential)
 
@@ -86,8 +86,8 @@ class PostgresConnector(DBConnector):
 
 
 class MySQLConnector(DBConnector):
-    def __init__(self, user, password, host, dbname, port):
-        super().__init__(user, password, host, dbname, port)
+    def __init__(self, user, password, host, dbname, port, logger=None):
+        super().__init__(user, password, host, dbname, port, logger=logger)
         credential = self.__get_credential()
         self.conn = self.get_conn(credential)
 
