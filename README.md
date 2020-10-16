@@ -23,44 +23,15 @@ pymysql
 In this example we build a script to test the integrity of three columns in a Postgres table.
 ```buildoutcfg
 import os
-import logging
 
 from dataraven.connections import PostgresConnector
 from dataraven.data_quality_operators import SQLNullCheckOperator, SQLDuplicateCheckOperator, CustomSQLDQOperator,\
     SQLSetDuplicateCheckOperator
 
 
-def init_logging(logfile="example_test.log"):
-    # remove previous run log file
-    if os.path.exists(logfile):
-        os.remove(logfile)
-
-    # create log message formatting
-    format = "%(asctime)s | %(name)s | %(levelname)s | \n%(message)s\n"
-    formatter = logging.Formatter(format)
-
-    # create log level
-    level = logging.DEBUG
-
-    # create file handler
-    handler = logging.FileHandler(logfile)
-
-    # set log formatter and level
-    handler.setFormatter(formatter)
-    handler.setLevel(level)
-
-    # create logger function
-    logger = logging.getLogger(__name__)
-
-    # set logger level and handler
-    logger.setLevel(level)
-    logger.addHandler(handler)
-    return logger
-
-
 def main():
     # initialize logging
-    logger = init_logging().info
+    logger = lambda msg: print(msg)
 
     # database connection credentials
     user = os.environ["user"]
@@ -101,31 +72,8 @@ def main():
     SQLSetDuplicateCheckOperator(conn, dialect, contacts_from_clause, threshold0, *contacts_duplicats_test_columns,
                                  logger=logger)
 
-    # test email, state for null values
-    contacts_null_columns = ("email", "country")
-    contacts_null_threshold = {"email": threshold10, "country": 0.5}
-    SQLNullCheckOperator(conn, dialect, contacts_from_clause, contacts_null_threshold, *contacts_null_columns,
-                         logger=logger)
-
 
     ##### TEST EARTHQUAKES TABLE #####
-    # test magnitude is bounded above at 10
-    magnitude_bounds_test_description = "Earthquakes.magnitude should be less than 10"
-    magnitude_bounds_test_query = """
-        select
-            case
-                when measure > 0 then 'test_fail'
-                else 'test_pass'
-            end as result,
-            measure,
-            0 as threshold
-        from
-        (select count(1) as measure
-        from test_schema.Earthquakes
-        where magnitude > 10)t
-        """
-    CustomSQLDQOperator(conn, magnitude_bounds_test_query, magnitude_bounds_test_description, logger=logger)
-
     # test columns for blank values
     earthquakes_columns = ("state", "epicenter", "date", "magnitude")
     earthquake_null_thresholds = {"state": threshold0, "epicenter": threshold5, "date": threshold1,
