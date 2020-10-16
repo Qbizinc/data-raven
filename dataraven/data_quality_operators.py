@@ -8,6 +8,9 @@ from .operations import SQLOperations, SQLSetOperations, CSVOperations, CSVSetOp
 
 
 class DQOperator(object):
+    def __init__(self, logger=None):
+        self.logger = logger if logger is not None else get_null_logger().info
+
     @abc.abstractmethod
     def build_test(self): pass
 
@@ -25,6 +28,7 @@ class SQLDQOperator(DQOperator):
             hard_fail=None,
             use_ansi=True
     ):
+        super().__init__(logger=logger)
         self.conn = conn
         self.threshold = threshold
         self.dialect = dialect
@@ -33,8 +37,6 @@ class SQLDQOperator(DQOperator):
         self.where = where
         self.hard_fail = hard_fail
         self.use_ansi = use_ansi
-
-        self.logger = logger if logger is not None else get_null_logger().info
 
         self.test_results = self.execute()
 
@@ -132,6 +134,7 @@ class CSVDQOperator(DQOperator):
             logger=None,
             **reducer_kwargs
     ):
+        super().__init__(logger=logger)
         self.from_ = from_
         self.threshold = threshold
         self.columns = columns
@@ -139,8 +142,6 @@ class CSVDQOperator(DQOperator):
         self.hard_fail = hard_fail
         self.fieldnames = fieldnames
         self.reducer_kwargs = reducer_kwargs
-
-        self.logger = logger if logger is not None else get_null_logger().info
 
         self.test_results = self.execute()
 
@@ -233,6 +234,7 @@ class CustomSQLDQOperator(DQOperator):
             logger=None,
             **test_desc_kwargs
     ):
+        super().__init__(logger=logger)
         self.conn = conn
         self.description = description
         self.custom_test = custom_test
@@ -240,8 +242,6 @@ class CustomSQLDQOperator(DQOperator):
         self.threshold = threshold
         self.hard_fail = hard_fail
         self.test_desc_kwargs = test_desc_kwargs
-
-        self.logger = logger if logger is not None else get_null_logger().info
 
         self.test_results = self.execute()
 
