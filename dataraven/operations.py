@@ -260,8 +260,11 @@ class CustomSQLOperations(Operations):
                 test_outcomes[column] = format_test_outcome(test_outcome)
         else:
             test_outcome = FetchQueryResults(self.conn, query).get_results()
-            column = test_outcome["column"]
-            test_outcomes[column] = format_test_outcome(test_outcome)
+            column = test_outcome.get("column")
+            if column:
+                test_outcomes[column] = format_test_outcome(test_outcome)
+            else:
+                test_outcomes["no_column"] = format_test_outcome(test_outcome)
         return test_outcomes
 
     def execute(self):
