@@ -37,7 +37,7 @@ class Operations(object):
             result_message = result_template.format(description=description, result=result, measure=measure,
                                                     threshold=threshold)
 
-            test_result_msgs[column] = {"result_msg": result_message, "outcome": result}
+            test_result_msgs[column] = {"result_msg": result_message, "result": result}
         return test_result_msgs
 
     def build_test_outcomes(self, measure_values):
@@ -64,7 +64,7 @@ class Operations(object):
             test_result = test_result_msgs[column]
             hard_fail_ = self.parse_dict_param(hard_fail, column)
             if hard_fail_ is True:
-                outcome = test_result["outcome"]
+                outcome = test_result["result"]
                 if outcome == "test_fail":
                     result_msg = test_result["result_msg"]
                     error_msg_template = hard_fail_msg_template()
