@@ -22,12 +22,12 @@ class Operations(object):
 
     @staticmethod
     def format_test_result_msgs(test_outcomes, test_descriptions):
-        test_result_msgs = {}
-        for column in test_outcomes:
+        test_outcomes_ = test_outcomes.copy()
+        for column in test_outcomes_:
             description = test_descriptions.get(column)
             if description is None:
                 description = test_descriptions.get("no_column")
-            test_outcome = test_outcomes[column]
+            test_outcome = test_outcomes_[column]
             result = test_outcome["result"]
             measure = test_outcome["measure"]
             threshold = test_outcome["threshold"]
@@ -35,9 +35,8 @@ class Operations(object):
             result_template = test_reuslt_msg_template()
             result_message = result_template.format(description=description, result=result, measure=measure,
                                                     threshold=threshold)
-
-            test_result_msgs[column] = {"result_msg": result_message, "result": result}
-        return test_result_msgs
+            test_outcome["result_msg"] = result_message
+        return test_outcomes_
 
     def build_test_outcomes(self, measure_values):
         test_outcomes = {}
@@ -57,10 +56,10 @@ class Operations(object):
             self.logger(result_msg)
         return True
 
-    def raise_execpetion_if_fail(self, test_result_msgs):
+    def raise_execpetion_if_fail(self, test_results):
         hard_fail = self.test.hard_fail
-        for column in test_result_msgs:
-            test_result = test_result_msgs[column]
+        for column in test_results:
+            test_result = test_results[column]
             hard_fail_ = self.parse_dict_param(hard_fail, column)
             if hard_fail_ is True:
                 outcome = test_result["result"]
@@ -82,15 +81,11 @@ class Operations(object):
 
         measure_values = self.calculate_measure_values()
         test_outcomes = self.build_test_outcomes(measure_values)
-        result_msgs = self.format_test_result_msgs(test_outcomes, descriptions)
+        test_results = self.format_test_result_msgs(test_outcomes, descriptions)
 
-        self.log_test_results(result_msgs)
-        self.raise_execpetion_if_fail(result_msgs)
+        self.log_test_results(test_results)
+        self.raise_execpetion_if_fail(test_results)
 
-        test_results = {
-            "test_outcomes": test_outcomes,
-            "result_messages": result_msgs
-        }
         return test_results
 
 
@@ -217,6 +212,8 @@ class CustomSQLOperations(Operations):
         self.conn = conn
         self.test_desc_kwargs = test_desc_kwargs
 
+    def calculate_measure_values(self): pass
+
     def format_test_description(self, **kwargs):
         test_descriptions = {}
         description_template = self.test.description
@@ -265,14 +262,12 @@ class CustomSQLOperations(Operations):
 
     def execute(self):
         descriptions = self.format_test_description(**self.test_desc_kwargs)
-        test_outcomes = self.calcualte_test_results()
-        result_msgs = self.format_test_result_msgs(test_outcomes, descriptions)
-        self.log_test_results(result_msgs)
-        self.raise_execpetion_if_fail(result_msgs)
 
-        test_results = {
-            "test_outcomes": test_outcomes,
-            "result_messages": result_msgs
-        }
+        test_outcomes = self.calcualte_test_results()
+
+        test_results = self.format_test_result_msgs(test_outcomes, descriptions)
+
+        self.log_test_results(test_results)
+        self.raise_execpetion_if_fail(test_results)
 
         return test_results
