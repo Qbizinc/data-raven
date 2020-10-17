@@ -25,7 +25,6 @@ class Operations(object):
         test_result_msgs = {}
         for column in test_outcomes:
             description = test_descriptions.get(column)
-            # if not found then try no_column. or is it better to pass the test object and get the columns directly?
             if description is None:
                 description = test_descriptions.get("no_column")
             test_outcome = test_outcomes[column]

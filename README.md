@@ -19,19 +19,30 @@ pymysql
 ## Installing
 `pip install data-raven`
 
-## Build an example data quality test script
-In this example we build a script to test the integrity of three columns in a Postgres table.
+## A simple data quality test script
+In this example we build a script to test the `name`, `price` and `product_id` columns from the Postgres table `Orders`.
+This table has the following DDL:
+```buildoutcfg
+create table Orders (
+id int,
+name varchar(50),
+order_ts varchar(26),
+product_id int,
+price float
+);
+```
+
+Here's the test script.
 ```buildoutcfg
 import os
 
 from dataraven.connections import PostgresConnector
-from dataraven.data_quality_operators import SQLNullCheckOperator, SQLDuplicateCheckOperator, CustomSQLDQOperator,\
-    SQLSetDuplicateCheckOperator
+from dataraven.data_quality_operators import SQLNullCheckOperator
 
 
 def main():
     # initialize logging
-    logger = lambda msg: print(msg)
+    lazy_logger = lambda msg: print(msg)
 
     # database connection credentials
     user = os.environ["user"]
@@ -41,70 +52,34 @@ def main():
     port = os.environ["port"]
 
     # postgres database connector
-    conn = PostgresConnector(user, password, host, dbname, port, logger=logger)
+    conn = PostgresConnector(user, password, host, dbname, port, logger=lazy_logger)
     dialect = "postgres"
 
     # test thresholds
     threshold0 = 0
     threshold1 = 0.01
     threshold5 = 0.05
-    threshold10 = 0.1
 
     ##### TEST ORDERS TABLE #####
-    orders_from_clause = "test_schema.Orders"
-    orders_where_clause = ["date(order_ts) = '2020-09-08'"]
+    # Table to be tested
+    from_clause = "test_schema.Orders"
 
-    # test for duplicates
-    orders_duplicates_test_column = "id"
-    SQLDuplicateCheckOperator(conn, dialect, orders_from_clause, threshold0, orders_duplicates_test_column,
-                              where=orders_where_clause, logger=logger)
+    # Conditional logic to be applied to input data
+    date = "2020-09-08"
+    where_clause = [f"date(order_ts) = '{date}'"]
 
-    # test multiple columns using one threshold
-    orders_null_test_columns = ("name", "product_id", "price")
-    SQLNullCheckOperator(conn, dialect, orders_from_clause, threshold0, *orders_null_test_columns,
-                         where=orders_where_clause, logger=logger)
+    # Columns to be tested in target table
+    columns = ("name", "product_id", "price")
 
-    ##### TEST CONTACTS TABLE #####
-    contacts_from_clause = "test_schema.Contacts"
+    # Threshold value to be applied to each column
+    threhold = {"name": threshold1, "product_id": threshold0, "price": threshold5}
 
-    # test first_name-last_name for duplicates
-    contacts_duplicats_test_columns = ("first_name", "last_name")
-    SQLSetDuplicateCheckOperator(conn, dialect, contacts_from_clause, threshold0, *contacts_duplicats_test_columns,
-                                 logger=logger)
+    # Hard fail condition set on specific columns
+    hard_fail = {"product_id": True}
 
-
-    ##### TEST EARTHQUAKES TABLE #####
-    # test columns for blank values
-    earthquakes_columns = ("state", "epicenter", "date", "magnitude")
-    earthquake_null_thresholds = {"state": threshold0, "epicenter": threshold5, "date": threshold1,
-                                  "magnitude": threshold0}
-    earthquake_col_not_blank_description = "{column} in table test_schema.Earthquakes should have fewer than {threshold} BLANK values."
-    earthquake_col_not_blank_query = """
-    select      
-    case
-        when measure is NULL then 'test_fail'
-        when measure > {threshold} then 'test_fail'
-        else 'test_pass'
-    end as result,
-    measure,
-    {threshold} as threshold
-    from
-    (select 
-    case when rows_ > 0 then cast(blank_cnt as float) / rows_ end as measure
-    from
-    (select 
-    count(1) as rows_,
-    sum(case when cast({column} as varchar) = '' then 1 else 0 end) as blank_cnt
-    from test_schema.Earthquakes)t)tt
-    """
-    CustomSQLDQOperator(
-        conn,
-        earthquake_col_not_blank_query,
-        earthquake_col_not_blank_description,
-        *earthquakes_columns,
-        threshold=earthquake_null_thresholds,
-        logger=logger
-    )
+    # Execute the null check test on each column in the above table
+    SQLNullCheckOperator(conn, dialect, from_clause, threhold, *columns, where=where_clause, logger=lazy_logger,
+                         hard_fail=hard_fail)
 
 
 if __name__ == "__main__":
@@ -120,7 +95,42 @@ if __name__ == "__main__":
 Data quality tests are used to measure the integrity of specified columns within a table or document. Every data 
 quality test will return `'test_pass'` or `'test_fail'` depending on the given measure and threshold.
 
-### Prebuilt Data Quality Operators
+### Data Quality Operators
+Each operator will log the test results using the function passed in the `logger` parameter. If no logger is found then
+these log messages will be swallowed. 
+
+Each operator has a `test_results` attribute which exposes the results from the underlying test. `test_results` is a 
+`dict` object with the following structure.
+```buildoutcfg
+{
+    "test_outcomes": {
+        COLUMN NAME: {
+            "result": 'test_pass' or 'test_fail',
+            "measure": THE MEASURED VALUE OF COLUMN NAME 
+            "threshold": THE THRESHOLD VALUE SPECIFIED FOR TEST
+        
+    },
+    "result_messages": {
+        COLUMN NAME: {
+            "result_msg": TEST RESULT MESSAGE,        
+            "outcome": 'test_pass' or 'test_fail'
+        }
+    }
+}   
+
+
+
+```
+
+`test_results` is a 
+`dict` with the following keys:
+`test_outcomes` - a `dict` object which maps a column name to it's test outcomes. The test outcomes are a `dict` with 
+the following keys:
+* `result` - The test result. This is `'test_pass'` or `'test_fail'`.
+* `measure` - The calculated measure on the given column.
+* `threshold` - The threshold value applied to test.
+
+ 
 `SQLNullCheckOperator` - Performs a test for each column contained in `columns` which counts the number of 
 `NULL` values found. Each test will return `'test_fail'` if the proportion of null values exceeds the specified
 threshold. 
@@ -136,9 +146,9 @@ a `SELECT DISTINCT` on all columns simultaneously and comparing to the total num
 `'test_fail'` if the proportion of duplicates exceedes the specified threshold. Note that for this test, the 
 `threshold` parameter should be a literal and not a dictionary, since only one test is being performed.
 
-`CustomSQLDQOperator` -
+`CustomSQLDQOperator` - Executes the test passed by the `custom_test` parameter on each column contained in `columns`. 
 
-`CSVNullCheckOperator` - 
+`CSVNullCheckOperator` - Tests each column contained in `columns` for `NULL` values. 
 
 `CSVDuplicateCheckOperator` -
 
