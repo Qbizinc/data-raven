@@ -167,8 +167,8 @@ class CSVNullCheckOperator(CSVDQOperator):
             logger=None
 
     ):
-        super().__init__(from_, logger, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail,
-                         fieldnames=fieldnames, logger=logger)
+        super().__init__(from_, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail, fieldnames=fieldnames,
+                         logger=logger)
 
     def build_test(self):
         test = CSVNullTest(self.from_, self.threshold, *self.columns, delimiter=self.delimiter,
