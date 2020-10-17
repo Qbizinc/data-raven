@@ -15,12 +15,10 @@ class Operations(object):
     @staticmethod
     def parse_dict_param(param, column):
         if isinstance(param, dict):
-            if column not in param:
-                raise KeyError(f"column name {column} not found in param {param}")
-            param_ = param[column]
+            value = param.get(column)
         else:
-            param_ = param
-        return param_
+            value = param
+        return value
 
     @staticmethod
     def format_test_result_msgs(test_outcomes, test_descriptions):
