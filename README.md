@@ -78,7 +78,7 @@ def main():
     # Hard fail condition set on specific columns
     hard_fail = {"product_id": True}
 
-    # Execute the null check test on each column in the above table
+    # Execute the null check test on each column in columns, on the above table
     SQLNullCheckOperator(conn, dialect, from_clause, threhold, *columns, where=where_clause, logger=lazy_logger,
                          hard_fail=hard_fail)
 
