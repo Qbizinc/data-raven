@@ -6,7 +6,7 @@ with open("README.md", 'r') as fh:
 
 setuptools.setup(
     name="data-raven",
-    version="0.0.1",
+    version="1.0.0",
     author="Alex Broley",
     author_email="alex.broley@gmail.com",
     description="A Python framework for building data quality tests",
