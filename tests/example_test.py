@@ -3,7 +3,7 @@ import logging
 
 from dataraven.connections import PostgresConnector
 from dataraven.data_quality_operators import SQLNullCheckOperator, SQLDuplicateCheckOperator, CustomSQLDQOperator,\
-    SQLSetDuplicateCheckOperator
+    CSVNullCheckOperator, CSVSetDuplicateCheckOperator
 
 
 def init_logging(logfile="example_test.log"):
@@ -47,7 +47,6 @@ def main():
 
     # postgres database connector
     conn = PostgresConnector(user, password, host, dbname, port, logger=logger)
-    dialect = "postgres"
 
     # test thresholds
     threshold0 = 0
@@ -61,28 +60,27 @@ def main():
 
     # test for duplicates
     orders_duplicates_test_column = "id"
-    SQLDuplicateCheckOperator(conn, dialect, orders_from_clause, threshold0, orders_duplicates_test_column,
+    SQLDuplicateCheckOperator(conn, orders_from_clause, threshold0, orders_duplicates_test_column,
                               where=orders_where_clause, logger=logger)
 
     # test multiple columns using one threshold
     orders_null_test_columns = ("name", "product_id", "price")
-    SQLNullCheckOperator(conn, dialect, orders_from_clause, threshold0, *orders_null_test_columns,
+    SQLNullCheckOperator(conn, orders_from_clause, threshold0, *orders_null_test_columns,
                          where=orders_where_clause, logger=logger)
 
-    ##### TEST CONTACTS TABLE #####
-    contacts_from_clause = "test_schema.Contacts"
+    ##### TEST Contacts_table.csv #####
+
+    #contacts_path = "../test_data/Contacts_table.csv"
+    contacts_path = "test_data/Contacts_table.csv"
 
     # test first_name-last_name for duplicates
     contacts_duplicats_test_columns = ("first_name", "last_name")
-    SQLSetDuplicateCheckOperator(conn, dialect, contacts_from_clause, threshold0, *contacts_duplicats_test_columns,
-                                 logger=logger)
+    CSVSetDuplicateCheckOperator(contacts_path, threshold0, *contacts_duplicats_test_columns, logger=logger)
 
     # test email, state for null values
     contacts_null_columns = ("email", "country")
     contacts_null_threshold = {"email": threshold10, "country": 0.5}
-    SQLNullCheckOperator(conn, dialect, contacts_from_clause, contacts_null_threshold, *contacts_null_columns,
-                         logger=logger)
-
+    CSVNullCheckOperator(contacts_path, contacts_null_threshold, *contacts_null_columns, logger=logger)
 
     ##### TEST EARTHQUAKES TABLE #####
     # test magnitude is bounded above at 10
@@ -106,7 +104,8 @@ def main():
     earthquakes_columns = ("state", "epicenter", "date", "magnitude")
     earthquake_null_thresholds = {"state": threshold0, "epicenter": threshold5, "date": threshold1,
                                   "magnitude": threshold0}
-    earthquake_col_not_blank_description = "{column} in table test_schema.Earthquakes should have fewer than {threshold} BLANK values."
+    earthquake_col_not_blank_description = """{column} in table test_schema.Earthquakes should have fewer than 
+    {threshold} BLANK values."""
     earthquake_col_not_blank_query = """
     select      
     case
