@@ -29,7 +29,6 @@ class SQLDQOperator(DQOperator):
     ):
         """
         :param conn: Database connection object
-        :param dialect: The SQL dialect for the given database. Accepted values are `postgres` or `mysql`
         :param from_: Schema and table name of table to be tested
         :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
         :param columns: The column names entered as comma separated positional arguments
@@ -74,7 +73,6 @@ class SQLNullCheckOperator(SQLDQOperator):
     ):
         """
         :param conn: Database connection object
-        :param dialect: The SQL dialect for the given database. Accepted values are `postgres` or `mysql`
         :param from_: Schema and table name of table to be tested
         :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
         :param columns: The column names entered as comma separated positional arguments
@@ -106,7 +104,6 @@ class SQLDuplicateCheckOperator(SQLDQOperator):
     ):
         """
         :param conn: Database connection object
-        :param dialect: The SQL dialect for the given database. Accepted values are `postgres` or `mysql`
         :param from_: Schema and table name of table to be tested
         :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
         :param columns: The column names entered as comma separated positional arguments
@@ -138,7 +135,6 @@ class SQLSetDuplicateCheckOperator(SQLDQOperator):
     ):
         """
         :param conn: Database connection object
-        :param dialect: The SQL dialect for the given database. Accepted values are `postgres` or `mysql`
         :param from_: Schema and table name of table to be tested
         :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
         :param columns: The column names entered as comma separated positional arguments
