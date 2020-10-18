@@ -29,7 +29,6 @@ class TestHarness(object):
         self.dbms = os.environ["dbms"]
 
         # sql test parameters
-        self.dialect = os.environ["dbms"]
         self.from_clause = "test_schema.Orders"
         self.conn = self.connect_database()
 
@@ -260,7 +259,6 @@ class TestSQLMeasureLogic(unittest.TestCase):
         from_clause = th.from_clause
         columns = ("col1", "col2")
         query = measure_set_duplication(from_clause, *columns)
-        print("query", query)
         query_ = th.strip_all_space(query).lower()
         query_target = f"""
         SELECT CASE WHEN (r."1" > 0) THEN 1 - CAST(u."1" AS FLOAT) / r."1" END AS "col1,col2"
@@ -372,11 +370,10 @@ class TestCustomTestFactory(unittest.TestCase):
 
 class TestDataQualityOperators(unittest.TestCase):
     def test_SQLNullCheckOperator(self):
-        results = SQLNullCheckOperator(th.conn, th.dialect, th.from_clause, th.logger, th.threshold, *th.columns)\
+        results = SQLNullCheckOperator(th.conn, th.from_clause, th.threshold, *th.columns, logger=th.logger)\
             .test_results
 
-        outcomes = results["test_outcomes"]
-        orders_ts_result = outcomes["order_ts"]
+        orders_ts_result = results["order_ts"]
 
         result = orders_ts_result["result"]
         measure = orders_ts_result["measure"]
@@ -385,19 +382,18 @@ class TestDataQualityOperators(unittest.TestCase):
         self.assertEqual(measure, 0)
         self.assertEqual(threshold, th.threshold["order_ts"])
 
-        num_outcomes = len(outcomes)
+        num_outcomes = len(results)
         self.assertEqual(num_outcomes, 3)
 
-        outcome_columns = list(outcomes.keys()).sort()
+        outcome_columns = list(results.keys()).sort()
         target_outcome_columns = list(th.columns).sort()
         self.assertEqual(outcome_columns, target_outcome_columns)
 
     def test_SQLDuplicateCheckOperator(self):
-        results = SQLDuplicateCheckOperator(th.conn, th.dialect, th.from_clause, th.logger, th.threshold, *th.columns)\
+        results = SQLDuplicateCheckOperator(th.conn, th.from_clause, th.threshold, *th.columns, logger=th.logger)\
             .test_results
 
-        outcomes = results["test_outcomes"]
-        orders_ts_result = outcomes["order_ts"]
+        orders_ts_result = results["order_ts"]
 
         result = orders_ts_result["result"]
         measure = orders_ts_result["measure"]
@@ -406,21 +402,20 @@ class TestDataQualityOperators(unittest.TestCase):
         self.assertEqual(measure, 0.366)
         self.assertEqual(threshold, th.threshold["order_ts"])
 
-        num_outcomes = len(outcomes)
+        num_outcomes = len(results)
         self.assertEqual(num_outcomes, 3)
 
-        outcome_columns = list(outcomes.keys()).sort()
+        outcome_columns = list(results.keys()).sort()
         target_outcome_columns = list(th.columns).sort()
         self.assertEqual(outcome_columns, target_outcome_columns)
 
     def test_SQLSetDuplicateCheckOperator(self):
         threshold_ = 0.1
-        results = SQLSetDuplicateCheckOperator(th.conn, th.dialect, th.from_clause, th.logger, threshold_, *th.columns)\
+        results = SQLSetDuplicateCheckOperator(th.conn, th.from_clause, threshold_, *th.columns, logger=th.logger)\
             .test_results
 
-        outcomes = results["test_outcomes"]
         column_label = ",".join(th.columns)
-        test_result = outcomes[column_label]
+        test_result = results[column_label]
 
         result = test_result["result"]
         measure = test_result["measure"]
@@ -429,14 +424,13 @@ class TestDataQualityOperators(unittest.TestCase):
         self.assertEqual(measure, 0.05800000000000005)
         self.assertEqual(threshold, threshold_)
 
-        num_outcomes = len(outcomes)
+        num_outcomes = len(results)
         self.assertEqual(num_outcomes, 1)
 
     def test_CSVNullCheckOperator(self):
-        results = CSVNullCheckOperator(th.path, th.logger, th.threshold, *th.columns).test_results
+        results = CSVNullCheckOperator(th.path, th.threshold, *th.columns, logger=th.logger).test_results
 
-        outcomes = results["test_outcomes"]
-        orders_ts_result = outcomes["order_ts"]
+        orders_ts_result = results["order_ts"]
 
         result = orders_ts_result["result"]
         measure = orders_ts_result["measure"]
@@ -445,18 +439,17 @@ class TestDataQualityOperators(unittest.TestCase):
         self.assertEqual(measure, 0)
         self.assertEqual(threshold, th.threshold["order_ts"])
 
-        num_outcomes = len(outcomes)
+        num_outcomes = len(results)
         self.assertEqual(num_outcomes, 3)
 
-        outcome_columns = list(outcomes.keys()).sort()
+        outcome_columns = list(results.keys()).sort()
         target_outcome_columns = list(th.columns).sort()
         self.assertEqual(outcome_columns, target_outcome_columns)
 
     def test_CSVDuplicateCheckOperator(self):
-        results = CSVDuplicateCheckOperator(th.path, th.logger, th.threshold, *th.columns).test_results
+        results = CSVDuplicateCheckOperator(th.path, th.threshold, *th.columns, logger=th.logger).test_results
 
-        outcomes = results["test_outcomes"]
-        orders_ts_result = outcomes["order_ts"]
+        orders_ts_result = results["order_ts"]
 
         result = orders_ts_result["result"]
         measure = orders_ts_result["measure"]
@@ -466,20 +459,19 @@ class TestDataQualityOperators(unittest.TestCase):
         self.assertEqual(measure, 0.362)
         self.assertEqual(threshold, th.threshold["order_ts"])
 
-        num_outcomes = len(outcomes)
+        num_outcomes = len(results)
         self.assertEqual(num_outcomes, 3)
 
-        outcome_columns = list(outcomes.keys()).sort()
+        outcome_columns = list(results.keys()).sort()
         target_outcome_columns = list(th.columns).sort()
         self.assertEqual(outcome_columns, target_outcome_columns)
 
     def test_CSVSetDuplicateCheckOperator(self):
         threshold_ = 0.1
-        results = CSVSetDuplicateCheckOperator(th.path, th.logger, threshold_, *th.columns).test_results
+        results = CSVSetDuplicateCheckOperator(th.path, threshold_, *th.columns, logger=th.logger).test_results
 
-        outcomes = results["test_outcomes"]
         column_label = ",".join(th.columns)
-        test_result = outcomes[column_label]
+        test_result = results[column_label]
 
         result = test_result["result"]
         measure = test_result["measure"]
@@ -488,7 +480,7 @@ class TestDataQualityOperators(unittest.TestCase):
         self.assertEqual(measure, 0.058)
         self.assertEqual(threshold, threshold_)
 
-        num_outcomes = len(outcomes)
+        num_outcomes = len(results)
         self.assertEqual(num_outcomes, 1)
 
     def test_CustomSQLDQOperator(self):
@@ -512,10 +504,9 @@ class TestDataQualityOperators(unittest.TestCase):
         (select count(1) as rows, count(distinct {column}) as uniques
         from test_schema.Orders)t)tt
         """
-        results = CustomSQLDQOperator(th.conn, query1, description1, th.logger, *th.columns, threshold=th.threshold)\
-            .test_results
-        outcomes = results["test_outcomes"]
-        orders_ts_result = outcomes["order_ts"]
+        results = CustomSQLDQOperator(th.conn, query1, description1, *th.columns, threshold=th.threshold,
+                                      logger=th.logger).test_results
+        orders_ts_result = results["order_ts"]
 
         result = orders_ts_result["result"]
         measure = orders_ts_result["measure"]
@@ -524,10 +515,10 @@ class TestDataQualityOperators(unittest.TestCase):
         self.assertEqual(measure, 0.366)
         self.assertEqual(float(threshold), th.threshold["order_ts"])
 
-        num_outcomes = len(outcomes)
+        num_outcomes = len(results)
         self.assertEqual(num_outcomes, 3)
 
-        outcome_columns = list(outcomes.keys()).sort()
+        outcome_columns = list(results.keys()).sort()
         target_outcome_columns = list(th.columns).sort()
         self.assertEqual(outcome_columns, target_outcome_columns)
 
@@ -552,10 +543,9 @@ class TestDataQualityOperators(unittest.TestCase):
         (select count(1) as rows, count(distinct product_id) as uniques
         from test_schema.Orders)t)tt
         """
-        results = CustomSQLDQOperator(th.conn, query, description, th.logger).test_results
+        results = CustomSQLDQOperator(th.conn, query, description, logger=th.logger).test_results
 
-        outcomes = results["test_outcomes"]
-        orders_ts_result = outcomes["product_id"]
+        orders_ts_result = results["product_id"]
 
         result = orders_ts_result["result"]
         measure = orders_ts_result["measure"]
@@ -564,7 +554,7 @@ class TestDataQualityOperators(unittest.TestCase):
         self.assertEqual(measure, 0.99)
         self.assertEqual(float(threshold), 0.1)
 
-        num_outcomes = len(outcomes)
+        num_outcomes = len(results)
         self.assertEqual(num_outcomes, 1)
 
 
