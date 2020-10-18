@@ -14,6 +14,12 @@ class Measure(object):
 
 class SQLMeasure(Measure):
     def __init__(self, dialect, from_, query, *columns):
+        """
+        :param dialect: The SQL dialect for the given database
+        :param from_: Schema and table name of table to be tested
+        :param query: The SQL query used to calculate measure value
+        :param columns: The column names entered as comma separated positional arguments
+        """
         self.columns = columns
         self.query = query
         self.from_ = from_
@@ -22,6 +28,12 @@ class SQLMeasure(Measure):
 
 class CSVMeasure(Measure):
     def __init__(self, delimiter, from_, reducer, *columns):
+        """
+        :param delimiter: Separator used in file specified by the `from_` parameter
+        :param from_: Path to CSV file
+        :param reducer: Function used to calculate measure value
+        :param columns: The column names entered as comma separated positional arguments
+        """
         self.columns = columns
         self.from_ = from_
         self.reducer = reducer
@@ -42,6 +54,13 @@ class SQLMeasureFactory(MeasureFactory):
             where=None,
             use_ansi=True
     ):
+        """
+        :param dialect: The SQL dialect for the given database
+        :param from_: Schema and table name of table to be tested
+        :param columns: The column names entered as comma separated positional arguments
+        :param where: Conditional logic to be applied to table specified by from_
+        :param use_ansi: Boolean to specify if SQL query should be complied to ANSI standards
+        """
         self.dialect = dialect
         self.from_ = from_
         self.columns = columns
@@ -106,6 +125,11 @@ class SQLSetDuplicateMeasure(SQLMeasureFactory):
 
 class CSVMeasureFactory(MeasureFactory):
     def __init__(self, from_, *columns, delimiter=','):
+        """
+        :param from_: Path to CSV file
+        :param columns: The column names entered as comma separated positional arguments
+        :param delimiter: Separator used in file specified by the `from_` parameter
+        """
         self.from_ = from_
         self.columns = columns
         self.delimiter = delimiter
