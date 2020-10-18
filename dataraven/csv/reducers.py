@@ -47,6 +47,12 @@ def measure_duplicates(row, *columns, collection=None):
 
 
 def measure_set_duplicates(row, *columns, collection=None):
+    """
+    :param row:
+    :param columns:
+    :param collection:
+    :return:
+    """
     if collection is None:
         collection = {}
 

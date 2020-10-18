@@ -12,6 +12,13 @@ class Test(object):
 
 class SQLTest(Test):
     def __init__(self, description, measure, predicate, threshold, hard_fail=False):
+        """
+        :param description: description of test
+        :param measure: measures.Measure object
+        :param predicate: function which takes the measure results and threshold value; returns test_pass or test_fail
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        """
         self.description = description
         self.measure = measure
         self.threshold = threshold
@@ -21,6 +28,13 @@ class SQLTest(Test):
 
 class CustomSQLTest(Test):
     def __init__(self, description, test, *columns, threshold=None, hard_fail=False):
+        """
+        :param description:
+        :param test:
+        :param columns:
+        :param threshold:
+        :param hard_fail:
+        """
         self.description = description
         self.test = test
         self.columns = columns
@@ -30,6 +44,13 @@ class CustomSQLTest(Test):
 
 class CSVTest(Test):
     def __init__(self, description, measure, predicate, threshold, hard_fail=False):
+        """
+        :param description:
+        :param measure:
+        :param predicate:
+        :param threshold:
+        :param hard_fail:
+        """
         self.description = description
         self.measure = measure
         self.threshold = threshold
@@ -46,7 +67,14 @@ class TestFactory(object):
 
 
 class CustomTestFactory(TestFactory):
-    def __init__( self, description, test, *columns, threshold=None, hard_fail=None):
+    def __init__(self, description, test, *columns, threshold=None, hard_fail=None):
+        """
+        :param description:
+        :param test:
+        :param columns:
+        :param threshold:
+        :param hard_fail:
+        """
         self.description = description
         self.test = test
         self.columns = columns
@@ -61,8 +89,29 @@ class CustomTestFactory(TestFactory):
 
 
 class SQLTestFactory(TestFactory):
-    def __init__(self, description, dialect, from_, predicate, threshold, *columns, where=None, hard_fail=False,
-                              use_ansi=True):
+    def __init__(
+            self,
+            description,
+            dialect,
+            from_,
+            predicate,
+            threshold,
+            *columns,
+            where=None,
+            hard_fail=False,
+            use_ansi=True
+    ):
+        """
+        :param description:
+        :param dialect:
+        :param from_:
+        :param predicate:
+        :param threshold:
+        :param columns:
+        :param where:
+        :param hard_fail:
+        :param use_ansi:
+        """
         self.description = description
         self.threshold = threshold
         self.predicate = predicate
@@ -122,7 +171,15 @@ class SQLSetDuplicateTest(SQLTestFactory):
 
 class CSVTestFactory(TestFactory):
     def __init__(self, description, from_, predicate, threshold, *columns, delimiter=',', hard_fail=False):
-
+        """
+        :param description:
+        :param from_:
+        :param predicate:
+        :param threshold:
+        :param columns:
+        :param delimiter:
+        :param hard_fail:
+        """
         self.description = description
         self.threshold = threshold
         self.predicate = predicate

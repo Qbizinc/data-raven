@@ -1,6 +1,11 @@
 
 
 def test_predicate_gt(measure_result, threshold):
+    """
+    :param measure_result:
+    :param threshold:
+    :return:
+    """
     if measure_result > threshold:
         return "test_fail"
     else:

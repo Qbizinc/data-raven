@@ -2,6 +2,10 @@
 
 class FetchQueryResults(object):
     def __init__(self, conn, query):
+        """
+        :param conn:
+        :param query:
+        """
         self.conn = conn
         self.query = query
 
