@@ -162,7 +162,7 @@ All CSV operators have the following required parameters:
 All CSV operators have the following optional parameters:
 * `delimiter` -  The delimiter used to separate values specified in the file refeneced by the `from_` parameter. 
 * `hard_fail` - Same as defined above for SQL operators.
-* `fieldnames` - A sequence of column names for CSV file specified in `from_` parameter. To be used if the specified
+* `fieldnames` - A sequence of all column names for CSV file specified in `from_` parameter. To be used if the specified
 file does not have column headers.
 * `reducer_kwargs` - Key word arguments passed to the measure reducer function.
 
