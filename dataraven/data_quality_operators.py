@@ -28,6 +28,17 @@ class SQLDQOperator(DQOperator):
             hard_fail=None,
             use_ansi=True
     ):
+        """
+        :param conn: Database connection object
+        :param dialect: The SQL dialect for the given database. Accepted values are `postgres` or `mysql`
+        :param from_: Schema and table name of table to be tested
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param columns: The column names entered as comma separated positional arguments
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        :param where: Conditional logic to be applied to table specified in `from_`
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param use_ansi: Boolean to specify if SQL query should be complied to ANSI standards
+        """
         super().__init__(logger=logger)
         self.conn = conn
         self.threshold = threshold
@@ -63,6 +74,17 @@ class SQLNullCheckOperator(SQLDQOperator):
             hard_fail=None,
             use_ansi=True
     ):
+        """
+        :param conn: Database connection object
+        :param dialect: The SQL dialect for the given database. Accepted values are `postgres` or `mysql`
+        :param from_: Schema and table name of table to be tested
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param columns: The column names entered as comma separated positional arguments
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        :param where: Conditional logic to be applied to table specified in `from_`
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param use_ansi: Boolean to specify if SQL query should be complied to ANSI standards
+        """
         super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
@@ -85,6 +107,17 @@ class SQLDuplicateCheckOperator(SQLDQOperator):
             hard_fail=None,
             use_ansi=True
     ):
+        """
+        :param conn: Database connection object
+        :param dialect: The SQL dialect for the given database. Accepted values are `postgres` or `mysql`
+        :param from_: Schema and table name of table to be tested
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param columns: The column names entered as comma separated positional arguments
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        :param where: Conditional logic to be applied to table specified in `from_`
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param use_ansi: Boolean to specify if SQL query should be complied to ANSI standards
+        """
         super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
@@ -107,6 +140,17 @@ class SQLSetDuplicateCheckOperator(SQLDQOperator):
             hard_fail=None,
             use_ansi=True
     ):
+        """
+        :param conn: Database connection object
+        :param dialect: The SQL dialect for the given database. Accepted values are `postgres` or `mysql`
+        :param from_: Schema and table name of table to be tested
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param columns: The column names entered as comma separated positional arguments
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        :param where: Conditional logic to be applied to table specified in `from_`
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param use_ansi: Boolean to specify if SQL query should be complied to ANSI standards
+        """
         super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
@@ -134,6 +178,16 @@ class CSVDQOperator(DQOperator):
             logger=None,
             **reducer_kwargs
     ):
+        """
+        :param from_: Path to CSV file to be tested
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param columns: Column names entered as comma separated positional arguments
+        :param delimiter: Separator used in file specified by the `from_` parameter
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param fieldnames: Sequence of all columns in CSV specified by `from_`. To be used when no headers exist in file
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        :param reducer_kwargs: Key word arguments passed to the measure reducer function
+        """
         super().__init__(logger=logger)
         self.from_ = from_
         self.threshold = threshold
@@ -167,6 +221,15 @@ class CSVNullCheckOperator(CSVDQOperator):
             logger=None
 
     ):
+        """
+        :param from_: Path to CSV file to be tested
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param columns: Column names entered as comma separated positional arguments
+        :param delimiter: Separator used in file specified by the `from_` parameter
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param fieldnames: Sequence of all columns in CSV specified by `from_`. To be used when no headers exist in file
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        """
         super().__init__(from_, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail, fieldnames=fieldnames,
                          logger=logger)
 
@@ -187,6 +250,15 @@ class CSVDuplicateCheckOperator(CSVDQOperator):
             fieldnames=None,
             logger=None
     ):
+        """
+        :param from_: Path to CSV file to be tested
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param columns: Column names entered as comma separated positional arguments
+        :param delimiter: Separator used in file specified by the `from_` parameter
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param fieldnames: Sequence of all columns in CSV specified by `from_`. To be used when no headers exist in file
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        """
         super().__init__(from_, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail, fieldnames=fieldnames,
                          logger=logger)
 
@@ -207,6 +279,15 @@ class CSVSetDuplicateCheckOperator(CSVDQOperator):
             fieldnames=None,
             logger=None
     ):
+        """
+        :param from_: Path to CSV file to be tested
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param columns: Column names entered as comma separated positional arguments
+        :param delimiter: Separator used in file specified by the `from_` parameter
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param fieldnames: Sequence of all columns in CSV specified by `from_`. To be used when no headers exist in file
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        """
         super().__init__(from_, threshold, *columns, delimiter=delimiter, hard_fail=hard_fail, fieldnames=fieldnames,
                          logger=logger)
 
@@ -234,6 +315,16 @@ class CustomSQLDQOperator(DQOperator):
             logger=None,
             **test_desc_kwargs
     ):
+        """
+        :param conn: Database connection object
+        :param custom_test: SQL query used to execute the data quality test
+        :param description: Description of the test given in `custom_test`
+        :param columns: Column names entered as comma separated positional arguments
+        :param threshold: Numeric or dict to specify the threshold for a given test or collection of tests
+        :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
+        :param logger: Optional logging function. If None is passed then logged messages will be swallowed
+        :param test_desc_kwargs: Key word arguments passed to the test description formatter
+        """
         super().__init__(logger=logger)
         self.conn = conn
         self.description = description
