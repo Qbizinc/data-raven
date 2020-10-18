@@ -132,8 +132,9 @@ operator must have a specified threshold value. If `threshold` is a `dict` it mu
 All SQL operators have the following optional parameters:
 * `logger` - the logging function. If None is passed then logged messages will be swallowed.
 * `where` - conditional logic to be applied to table specified in `from_`.
-* `hard_fail` - Specifies if a test which results in `'test_fail'` should terminate the current process. This parameter
-can be passed as a literal or a `dict` object. If `hard_fail` is set to `True` then any test being performed by the 
+* `hard_fail` - Specifies if an operator which has a test which results in `'test_fail'` should terminate the current 
+process. This parameter
+can be passed as a literal or a `dict` object. If `hard_fail` is set to `True` then every test being performed by the 
 given operator which results in `'test_fail'` will terminate the current process. If `hard_fail` is a `dict` object then
 each `hard_fail` value will be referenced by column name. Only those columns with a `hard_fail` value of `True` will 
 terminate the process upon test failure. If `hard_fail` is a `dict` it must have the following structure:
@@ -193,6 +194,4 @@ The `CustomSQLDQOperator` class has the following optional parameters:
 * `threhsold` - Same as defined above for SQL operators.
 * `hard_fail` - Same as defined above for SQL operators.
 * `test_desc_kwargs` - Key word arguments for formatting the test description.
-    
-It is recommended that you also return a `measure` and `threshold` column. 
 
