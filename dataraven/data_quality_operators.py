@@ -19,7 +19,6 @@ class SQLDQOperator(DQOperator):
     def __init__(
             self,
             conn,
-            dialect,
             from_,
             threshold,
             *columns,
@@ -41,8 +40,8 @@ class SQLDQOperator(DQOperator):
         """
         super().__init__(logger=logger)
         self.conn = conn
+        self.dialect = conn.dialect
         self.threshold = threshold
-        self.dialect = dialect
         self.from_ = from_
         self.columns = columns
         self.where = where
@@ -65,7 +64,6 @@ class SQLNullCheckOperator(SQLDQOperator):
     def __init__(
             self,
             conn,
-            dialect,
             from_,
             threshold,
             *columns,
@@ -85,7 +83,7 @@ class SQLNullCheckOperator(SQLDQOperator):
         :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
         :param use_ansi: Boolean to specify if SQL query should be complied to ANSI standards
         """
-        super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
+        super().__init__(conn, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
     def build_test(self):
@@ -98,7 +96,6 @@ class SQLDuplicateCheckOperator(SQLDQOperator):
     def __init__(
             self,
             conn,
-            dialect,
             from_,
             threshold,
             *columns,
@@ -118,7 +115,7 @@ class SQLDuplicateCheckOperator(SQLDQOperator):
         :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
         :param use_ansi: Boolean to specify if SQL query should be complied to ANSI standards
         """
-        super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
+        super().__init__(conn, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
     def build_test(self):
@@ -131,7 +128,6 @@ class SQLSetDuplicateCheckOperator(SQLDQOperator):
     def __init__(
             self,
             conn,
-            dialect,
             from_,
             threshold,
             *columns,
@@ -151,7 +147,7 @@ class SQLSetDuplicateCheckOperator(SQLDQOperator):
         :param hard_fail: Boolean or dict to specify if test failure should result in terminating the current process
         :param use_ansi: Boolean to specify if SQL query should be complied to ANSI standards
         """
-        super().__init__(conn, dialect, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
+        super().__init__(conn, from_, threshold, *columns, logger=logger, where=where, hard_fail=hard_fail,
                          use_ansi=use_ansi)
 
     def build_test(self):
