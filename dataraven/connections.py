@@ -79,6 +79,7 @@ class PostgresConnector(DBConnector):
         super().__init__(user, password, host, dbname, port, logger=logger)
         credential = self.__get_credential()
         self.conn = self.get_conn(credential)
+        self.dialect = "POSTGRES"
 
     def __get_credential(self):
         cred = f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}"
@@ -90,6 +91,7 @@ class MySQLConnector(DBConnector):
         super().__init__(user, password, host, dbname, port, logger=logger)
         credential = self.__get_credential()
         self.conn = self.get_conn(credential)
+        self.dialect = "MYSQL"
 
     def __get_credential(self):
         cred = f"mysql+pymysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}"
