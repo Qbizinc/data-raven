@@ -80,7 +80,7 @@ def compile_to_dialect(query, dialect, use_ansi=True):
     elif dialect_ == "MYSQL":
         query_ = query.compile(dialect=MySQLDialect(use_ansi=use_ansi))
     else:
-        error_msg = f"expected one fo the following dialects: POSTGRES, ... but found {dialect}"
+        error_msg = f"expected one fo the following dialects: POSTGRES, MYSQL ... but found {dialect}"
         raise ValueError(error_msg)
     return query_
 
