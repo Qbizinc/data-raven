@@ -127,11 +127,11 @@ operator must have a specified threshold value. If `threshold` is a `dict` it mu
     COLUMN NAME: NUMERIC VALUE
 }
 ```
-* `columns` - the column names entered as comma separated positional arguments.
+* `columns` - The column names entered as comma separated positional arguments.
 
 All SQL operators have the following optional parameters:
-* `logger` - the logging function. If None is passed then logged messages will be swallowed.
-* `where` - conditional logic to be applied to table specified in `from_`.
+* `logger` - The logging function. If None is passed then logged messages will be swallowed.
+* `where` - Conditional logic to be applied to table specified in `from_`.
 * `hard_fail` - Specifies if an operator which has a test which results in `'test_fail'` should terminate the current 
 process. This parameter
 can be passed as a literal or a `dict` object. If `hard_fail` is set to `True` then every test being performed by the 
