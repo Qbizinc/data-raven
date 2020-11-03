@@ -1,10 +1,10 @@
-# data-raven
+# qbiz-data-raven
 
 ## Description
-A toolbox of flexible database connectors and test methods used to measure data integrity of datasets and database 
+A toolbox of flexible database connectors and test methods used to measure data integrity of datasets and database
 tables.
-* Build data quality tests which can be inserted into an existing Python script or run as a stand-alone script. 
-* Send outcome notifications to messaging and logging applications. 
+* Build data quality tests which can be inserted into an existing Python script or run as a stand-alone script.
+* Send outcome notifications to messaging and logging applications.
 * Halt pipelines and raise exceptions when needed.
 
 ## Prerequisites
@@ -17,7 +17,8 @@ psycopg2
 pymysql
 
 ## Installing
-`pip install data-raven`
+`pip install qbiz-data-raven`
+
 
 ## A simple data quality test script
 
@@ -37,8 +38,8 @@ Here's the test script.
 ```buildoutcfg
 import os
 
-from dataraven.connections import PostgresConnector
-from dataraven.data_quality_operators import SQLNullCheckOperator
+from qbizdataraven.connections import PostgresConnector
+from qbizdataraven.data_quality_operators import SQLNullCheckOperator
 
 
 def main():
@@ -93,14 +94,14 @@ if __name__ == "__main__":
 * MySQL
 
 ## Data Quality Tests
-Data quality tests are used to measure the integrity of specified columns within a table or document. Every data 
+Data quality tests are used to measure the integrity of specified columns within a table or document. Every data
 quality test will return `'test_pass'` or `'test_fail'` depending on the given measure and threshold.
 
 ### Data Quality Operators
 Each operator will log the test results using the function passed in the `logger` parameter. If no logger is found then
-these log messages will be swallowed. 
+these log messages will be swallowed.
 
-Each operator has a `test_results` attribute which exposes the results from the underlying test. `test_results` is a 
+Each operator has a `test_results` attribute which exposes the results from the underlying test. `test_results` is a
 `dict` object with the following structure:
 ```buildoutcfg
 {
@@ -118,8 +119,8 @@ All SQL operators have the following required parameters:
 * `conn` - The database connection object.
 * `dialect` - The SQL dialect for the given database. Accepted values are `postgres` or `mysql`.
 * `from_` - The schema and table name of table to be tested.
-* `threshold` - The threshold specified for a given test or collection of tests. This parameter can be numeric or a 
-`dict` object. If `threshold` is numeric then this value will be applied to all columns being tested by the operator. 
+* `threshold` - The threshold specified for a given test or collection of tests. This parameter can be numeric or a
+`dict` object. If `threshold` is numeric then this value will be applied to all columns being tested by the operator.
 If `threshold` is a `dict` then each `threshold` value will be referenced by column name. All columns being passed to the
 operator must have a specified threshold value. If `threshold` is a `dict` it must have the following structure:
 ```buildoutcfg
@@ -132,11 +133,11 @@ operator must have a specified threshold value. If `threshold` is a `dict` it mu
 All SQL operators have the following optional parameters:
 * `logger` - The logging function. If None is passed then logged messages will be swallowed.
 * `where` - Conditional logic to be applied to table specified in `from_`.
-* `hard_fail` - Specifies if an operator which has a test which results in `'test_fail'` should terminate the current 
+* `hard_fail` - Specifies if an operator which has a test which results in `'test_fail'` should terminate the current
 process. This parameter
-can be passed as a literal or a `dict` object. If `hard_fail` is set to `True` then every test being performed by the 
+can be passed as a literal or a `dict` object. If `hard_fail` is set to `True` then every test being performed by the
 given operator which results in `'test_fail'` will terminate the current process. If `hard_fail` is a `dict` object then
-each `hard_fail` value will be referenced by column name. Only those columns with a `hard_fail` value of `True` will 
+each `hard_fail` value will be referenced by column name. Only those columns with a `hard_fail` value of `True` will
 terminate the process upon test failure. If `hard_fail` is a `dict` it must have the following structure:
 ```buildoutcfg
 {
@@ -144,13 +145,13 @@ terminate the process upon test failure. If `hard_fail` is a `dict` it must have
 }
 ```
 * `use_ansi` - If true then compile measure query to ANSI standards.
- 
-`SQLNullCheckOperator` - Test the proportion of null values for each column contained in `columns`. 
+
+`SQLNullCheckOperator` - Test the proportion of null values for each column contained in `columns`.
 
 `SQLDuplicateCheckOperator` - Test the proportion of duplicate values for each column contained in `columns`.
 
 `SQLSetDuplicateCheckOperator` - Test the number of duplicate values across all columns passed to the `columns`
-parameter simultaniously. This measure is equivalent to counting the number of rows returned from a `SELECT DISTINCT` on 
+parameter simultaniously. This measure is equivalent to counting the number of rows returned from a `SELECT DISTINCT` on
 all columns and dividing by the total number of rows.
 
 #### CSV Operators
@@ -160,7 +161,7 @@ All CSV operators have the following required parameters:
 * `columns` - the column names entered as comma separated positional arguments.
 
 All CSV operators have the following optional parameters:
-* `delimiter` -  The delimiter used to separate values specified in the file refeneced by the `from_` parameter. 
+* `delimiter` -  The delimiter used to separate values specified in the file refeneced by the `from_` parameter.
 * `hard_fail` - Same as defined above for SQL operators.
 * `fieldnames` - A sequence of all column names for CSV file specified in `from_` parameter. To be used if the specified
 file does not have column headers.
@@ -174,17 +175,17 @@ file does not have column headers.
 parameter simultaniously.
 
 #### Custom Operators
-`CustomSQLDQOperator` - Executes the test passed by the `custom_test` parameter on each column contained in `columns`. 
+`CustomSQLDQOperator` - Executes the test passed by the `custom_test` parameter on each column contained in `columns`.
 The `CustomSQLDQOperator` class has the following required parameters:
 * `conn` - The database connection object.
-* `custom_test` - The SQL query to be executed. The `custom_test` query is required to return a column labeled `result` 
+* `custom_test` - The SQL query to be executed. The `custom_test` query is required to return a column labeled `result`
 which takes value `'test_pass'` or `'test_fail'`. The `custom_test` query should also return columns `measure`, which
 provides the measured column value, and `threshold`, which gives the threshold used in the test. If these columns are
 present then these values will be logged and returned in the `test_results` attribute. If `measure` and `threshold` are
-not returned by the `custom_test` query then these values will be logged as `None`, and will be given in the 
-`test_results` attribute as `None`. `custom_test` can also be a query template with placeholders `{column}` and 
+not returned by the `custom_test` query then these values will be logged as `None`, and will be given in the
+`test_results` attribute as `None`. `custom_test` can also be a query template with placeholders `{column}` and
 `{threshold}` for variable column names and threshold values.  
-* `description` - The description of the data quality test being performed. The description is may contain 
+* `description` - The description of the data quality test being performed. The description is may contain
 placeholders `{column}` and `{threshold}` for the optional parameters `columns` and `threshold`, if they are passed
 to the `CustomSQLDQOperator`. In this case then a test description will be generated for each `column` in `columns` and
 for each value of `threshold`.
@@ -194,4 +195,3 @@ The `CustomSQLDQOperator` class has the following optional parameters:
 * `threhsold` - Same as defined above for SQL operators.
 * `hard_fail` - Same as defined above for SQL operators.
 * `test_desc_kwargs` - Key word arguments for formatting the test description.
-
